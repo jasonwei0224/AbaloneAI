@@ -6,27 +6,30 @@ player_color = ['Black', 'White']
 game_mode = ["human vs human", "human vs computer"]
 
 # Configuration window layout
-config_layout = [[sg.Text('Select Initial Board Layout')],
-                 [sg.Radio(board, 1) for board in board_choice],
-                 [sg.Text('Select Player Color')],
-                 [sg.Radio(color, 2) for color in player_color],
-                 [sg.Text('Select Game Mode')],
-                 [sg.Radio(mode, 3) for mode in game_mode],
-                 [sg.Text('Set player 1 (human) move limit per game'),
+config_layout = [[sg.Text('Select Initial Board Layout', text_color="yellow")],
+                 [sg.Radio(board, 1, default=True) if board == 'Standard' else sg.Radio(board, 1) for board in board_choice],
+                 [sg.VerticalSeparator(pad=((0,0),(10,20)))],
+                 [sg.Text('Select Player Color', text_color="yellow")],
+                 [sg.Radio(color, 2, default=True) if color == 'Black' else sg.Radio(color, 2)  for color in player_color],
+                 [sg.VerticalSeparator(pad=((0,0),(10,20)))],
+                 [sg.Text('Select Game Mode', text_color="yellow")],
+                 [sg.Radio(mode, 3,  default=True) for mode in game_mode],
+                 [sg.VerticalSeparator(pad=((0,0),(10,20)))],
+                 [sg.Text('Set player move limit per game:'),
+                  sg.Spin([i for i in range(1, 11)], initial_value=15)],
+                [sg.VerticalSeparator(pad=((0,0),(10,20)))],
+                 [sg.Text('Set player 1 (human) time limit for a move limit (s)'),
                   sg.Spin([i for i in range(1, 11)], initial_value=1)],
-                 [sg.Text('Set player 2 (computer/human) move limit per game'),
+                 [sg.VerticalSeparator(pad=((0,0),(10,20)))],
+                 [sg.Text('Set player 2 (computer/human) time limit for a move  (s)'),
                   sg.Spin([i for i in range(1, 11)], initial_value=1)],
-                 [sg.Text('Set player 1 (human) time limit for a move limit'),
-                  sg.Spin([i for i in range(1, 11)], initial_value=1)],
-                 [sg.Text('Set player 2 (computer/human) time limit for a move limit'),
-                  sg.Spin([i for i in range(1, 11)], initial_value=1)],
-                 [sg.OK("Start"), sg.Cancel("Exit")]]
+                 [sg.OK("Start", pad=((10,0),(50,10))), sg.Cancel("Exit",  pad=((20,0),(50,10)))]]
 
 # drop down menu layout
 menu = [['Actions', ['Play', 'Stop', 'Pause', 'Reset']],
         ['History', ['Player Move History', 'Player Time History']]]
 
-window = sg.Window('Game Configuration', config_layout)
+window = sg.Window('Game Configuration', config_layout, font=('arial', 15))
 
 event, values = window.read()
 
@@ -34,45 +37,83 @@ if event == "Exit":
     window.close()
 elif event == 'Start':
     window.close()  # Close the configuration window
+    time_col = sg.Col([])
+    col = [[sg.Button('Play'), sg.Button('Pause'), sg.Button('Stop'), sg.Button('Undo')],
+        [sg.VerticalSeparator(pad=((0, 0), (10, 20)))],
+        [sg.InputText("Please Enter your move", key='move'), sg.Button("Submit")],
+           [sg.Text('Next Move: ....'), ],
+        [sg.VerticalSeparator(pad=((0, 0), (10, 20)))],
+        [sg.Text('Player 1: 0')],
+        [sg.Text('Player 2: 0')],
+        [sg.Text('Time Taken by Player 1:   ')],
+        [sg.Text('Time Taken by Player 2:  ')],
+        [sg.VerticalSeparator(pad=((0, 0), (10, 20)))],
+
+        [sg.Text('Moves Taken by Player 1:   ' ,pad= ((0,50),(0,0))),sg.Text('Moves Taken by Player 2: ')],
+        [sg.Multiline('Moves Taken by Player 1:   ',size=(25,10)), sg.Multiline('Moves Taken by Player 2: ',size=(25,10))],
+        ]
     game_layout = [
-        [sg.Menu(menu, )], [sg.Column([[sg.Text('Player 1: 0   Player2:  0 ')]]), sg.Column([[sg.Button('Undo')]])],
-        [sg.Column([[sg.Text('Moves Taken by Player 1:   ')]]),
-         sg.Column([[sg.Text('Moves Taken by Player 2: ')]])],
-        [sg.Column([[sg.Text('Time Taken by Player 1:   ')]]),
-         sg.Column([[sg.Text('Time Taken by Player 2:  ')]])],
-        [sg.Column([[sg.Text('Next Move: ....')]])],
-        [sg.Graph((300, 300), (0, 300), (300, 0), key='graph')],
-        [sg.Column([[sg.InputText("Please Enter your move", key='move')], [sg.Button("Submit")]], )]
+        [sg.Graph((600, 600), (0, 300), (300, 0), key='graph'), sg.Column(col)],
+
     ]
-    window2 = sg.Window('Abalone', game_layout).Finalize()  # Create the game window
+    window2 = sg.Window('Abalone', game_layout,  font=('arial', 15)).Finalize()  # Create the game window
 
     canvas = window2['graph']
 
     # default starting position of marbles
+    # default_board = [
+    #     ["-", "-", 1, 1, 1, 1, 1, "-", "-"],
+    #     ["-", 1, 1, 1, 1, 1, 1, "-", "-"],
+    #     ["-", 0, 0, 1, 1, 1, 0, 0, "-"],
+    #     ["-", 0, 0, 0, 0, 0, 0, 0, 0],
+    #     [0, 0, 0, 0, 0, 0, 0, 0, 0],
+    #     ["-", 0, 0, 0, 0, 0, 0, 0, 0],
+    #     ["-", 0, 0, 2, 2, 2, 0, 0, "-"],
+    #     ["-", 2, 2, 2, 2, 2, 2, "-", "-"],
+    #     ["-", "-", 2, 2, 2, 2, 2, "-", "-"],
+    # ]
+    #
+    # offset_lst = [0, 15, 6, -5, 5, -5, 6, 15, 0]
+    # BOX_SIZE = 28
+    # RADIUS = 13
+    # for row in range(len(default_board)):
+    #     offset = offset_lst[row]
+    #     for col in range(len(default_board[row])):
+    #         if default_board[row][col] == '-':
+    #
+    #             canvas.DrawCircle((col * BOX_SIZE + 20 + offset, row * BOX_SIZE + 15), RADIUS, fill_color="",
+    #                               line_color='')
+    #
+    #         elif default_board[row][col] == 0:
+    #             canvas.DrawCircle((col * BOX_SIZE + 20 + offset, row * BOX_SIZE + 15), RADIUS, fill_color="dark grey")
+    #
+    #         elif default_board[row][col] == 1:
+    #             canvas.DrawCircle((col * BOX_SIZE + 20 + offset, row * BOX_SIZE + 15), RADIUS, fill_color='white')
+    #
+    #         elif default_board[row][col] == 2:
+    #             canvas.DrawCircle((col * BOX_SIZE + 20 + offset, row * BOX_SIZE + 15), RADIUS, fill_color='black')
+    #         canvas.draw_text('{}'.format(row * 6 + col + 1),
+    #                     (col * BOX_SIZE + 20 + offset, row * BOX_SIZE + 15), color="red")
     default_board = [
-        ["-", "-", 1, 1, 1, 1, 1, "-", "-"],
-        ["-", 1, 1, 1, 1, 1, 1, "-", "-"],
-        ["-", 0, 0, 1, 1, 1, 0, 0, "-"],
-        ["-", 0, 0, 0, 0, 0, 0, 0, 0],
+        [1, 1, 1, 1, 1],
+        [1, 1, 1, 1, 1, 1],
+        [0, 0, 1, 1, 1, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0],
         [0, 0, 0, 0, 0, 0, 0, 0, 0],
-        ["-", 0, 0, 0, 0, 0, 0, 0, 0],
-        ["-", 0, 0, 2, 2, 2, 0, 0, "-"],
-        ["-", 2, 2, 2, 2, 2, 2, "-", "-"],
-        ["-", "-", 2, 2, 2, 2, 2, "-", "-"],
+        [0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 2, 2, 2, 0, 0],
+        [2, 2, 2, 2, 2, 2],
+        [2, 2, 2, 2, 2],
     ]
 
-    offset_lst = [8, 15, 6, -5, 5, -5, 6, 15, 8]
-    BOX_SIZE = 22
-    RADIUS = 10
+    offset_lst = [48, 38, 28, 17, 5, 17, 28, 38, 48]
+    BOX_SIZE = 28
+    RADIUS = 13
+    letter_and_numOffset = {0: ('I', 5), 1: ('H', 4), 2: ('G', 3), 3: ('F', 2), 4: ('E', 1), 5: ('D', 1), 6: ('C', 1), 7: ('B', 1), 8: ('A', 1)}
     for row in range(len(default_board)):
         offset = offset_lst[row]
         for col in range(len(default_board[row])):
-            if default_board[row][col] == '-':
-
-                canvas.DrawCircle((col * BOX_SIZE + 20 + offset, row * BOX_SIZE + 15), RADIUS, fill_color="",
-                                  line_color='')
-
-            elif default_board[row][col] == 0:
+            if default_board[row][col] == 0:
                 canvas.DrawCircle((col * BOX_SIZE + 20 + offset, row * BOX_SIZE + 15), RADIUS, fill_color="dark grey")
 
             elif default_board[row][col] == 1:
@@ -80,6 +121,11 @@ elif event == 'Start':
 
             elif default_board[row][col] == 2:
                 canvas.DrawCircle((col * BOX_SIZE + 20 + offset, row * BOX_SIZE + 15), RADIUS, fill_color='black')
+
+
+            canvas.draw_text('{}'.format(letter_and_numOffset[row][0] + str(letter_and_numOffset[row][1]+col)),
+                             (col * BOX_SIZE + 20 + offset, row * BOX_SIZE + 15), color="red")
+
 
     while True:
         event, values = window2.read()
