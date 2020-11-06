@@ -65,12 +65,38 @@ def show_grid(location_matrix):
 
 
 def coordinates_to_notation(row, col):
+    """
+    change matrix row, col to notation used in class
+    :param row: int
+    :param col: int
+    :return: string E.g. "A1"
+    """
     return str(constant.LETTER_AND_NUM_OFFSET[row][0]) + str(col + constant.LETTER_AND_NUM_OFFSET[row][1])
 
 
 def notation_to_coordinates(s):
+    """
+    change notation used in class to matrix row and col
+    :param s: notation E.g. A5
+    :return: coordinates in tuple (row, col)
+    """
     return (
         int(constant.LOCATION_DICT[s[0]]), int(s[1]) - constant.LETTER_AND_NUM_OFFSET[constant.LOCATION_DICT[s[0]]][1])
+
+
+def print_move_detail(move):
+    """
+    print move based on move notation with coordinate translate to notation used in class
+    :param move: move notation ( move type, [starting coordinates], [end cooridnates])
+    :return:
+    """
+    origin = ""
+    dest = ""
+    for coordinate in move[1]:
+        origin += coordinates_to_notation(coordinate[0], coordinate[1]) + " "
+    for coordinate in move[2]:
+        dest += coordinates_to_notation(coordinate[0], coordinate[1]) + " "
+    print(move[0] + ": " + str(origin) + " => " + str(dest))
 
 
 def generate_single_marble_move(location_matrix, location):
@@ -262,17 +288,179 @@ def generate_single_marble_move(location_matrix, location):
 
     return moves
 
-def generate_side_step_three_marbles(location_matrix, color):
-    pass
 
-def generate_side_step_two_marbles(location_matrix, color):
-    move_lst = []  # (move type, [start locations], [end locations])
+def generate_side_step_three_marbles(location_matrix, color):
+    moves = []  # (move type, [start locations], [end locations])
     move = "SS"
 
-    # This only check diagonal two marbles NW/SW
+    # TODO: generate diagonal two marbles NW/SW
 
-    # This only check diagonal two marbles NE/SW
+    # TODO: generate diagonal two marbles NE/SW
 
+
+    # This check the horizontal of three marbles
+    row = 0
+    while row < len(location_matrix):
+        col = 0
+        while col < len(location_matrix[row]):
+            location = (row, col)
+            if location_matrix[row][col] == color and location_matrix[row][col + 1] == color and location_matrix[row][
+                col + 2] == color:
+                origin = [location, (row, col + 1), (row, col + 2)]
+                if row == 0:
+                    if location_matrix[row + 1][col + 2] == 0 and location_matrix[row + 1][col + 1] == 0 and \
+                            location_matrix[row + 1][
+                                col + 3] == 0:  # SE
+                        moves.append((move, origin,
+                                         [(row + 1, col + 1), (row + 1, col + 2), (row + 1, col + 3)]))
+                        print_move_detail((move, origin,
+                                           [(row + 1, col + 1), (row + 1, col + 2), (row + 1, col + 3)]))
+                    if location_matrix[row + 1][col] == 0 and location_matrix[row + 1][col + 1] == 0 and \
+                            location_matrix[row + 1][col + 2] == 0:  # SW
+                        moves.append((move, origin,
+                                         [(row + 1, col), (row + 1, col + 1), (row + 1, col + 2)]))
+                        print(coordinates_to_notation(row + 1, col), coordinates_to_notation(row + 1, col + 1),
+                              coordinates_to_notation(row + 1, col + 2))
+                    col += 3
+
+                if row == 8:
+                    if location_matrix[row - 1][col + 1] == 0 and location_matrix[row - 1][col + 2] == 0 and \
+                            location_matrix[row - 1][
+                                col + 3] == 0:  # NE
+                        moves.append(
+                            (move, origin,
+                             [(row - 1, col + 1), (row - 1, col + 2), (row - 1, col + 3)]))
+                        print_move_detail((move, origin,
+                                           [(row - 1, col + 1), (row - 1, col + 2), (row - 1, col + 3)]))
+                    if location_matrix[row - 1][col] == 0 and location_matrix[row - 1][col + 1] == 0 and \
+                            location_matrix[row - 1][col + 2] == 0:  # NW
+                        moves.append(
+                            (move, origin,
+                             [(row - 1, col), (row - 1, col + 1), (row - 1, col + 2)]))
+                        print_move_detail((move, origin,
+                                           [(row - 1, col), (row - 1, col + 1), (row - 1, col + 2)]))
+                    col += 3
+
+                if 0 < row < 4:
+                    if col == 0 and location_matrix[row + 1][col] == 0 and location_matrix[row + 1][col + 1] == 0 and \
+                            location_matrix[row + 1][col + 2] == 0:  # NW when at edge
+                        moves.append(
+                            (move, origin,
+                             [(row + 1, col + 1), (row + 1, col + 2), (row + 1, col + 2)]))
+                        print_move_detail((move, origin,
+                                           [(row + 1, col), (row + 1, col + 1), (row + 1, col + 2)]))
+                    if location_matrix[row + 1][col + 1] == 0 and location_matrix[row + 1][col + 2] == 0 and \
+                            location_matrix[row + 1][col + 3] == 0:  # SE
+                        moves.append(
+                            (move, origin,
+                             [(row + 1, col + 1), (row + 1, col + 2), (row + 1, col + 3)]))
+                        print_move_detail((move, origin,
+                                           [(row + 1, col + 1), (row + 1, col + 2), (row + 1, col + 3)]))
+                    if col != 0 and location_matrix[row + 1][col] == 0 and location_matrix[row + 1][
+                        col + 1] == 0 and location_matrix[row + 1][col + 2] == 0:  # SW
+                        moves.append(
+                            (move, [location, (row, col + 1), (row + 1, col + 2)],
+                             [(row + 1, col), (row + 1, col + 1), (row + 1, col + 2)]))
+                        print_move_detail((move, origin,
+                                           [(row + 1, col), (row + 1, col + 1), (row + 1, col + 2)]))
+                    if col != 0 and location_matrix[row - 1][col - 1] == 0 and location_matrix[row - 1][
+                        col] == 0 and location_matrix[row - 1][col + 1] == 0:  # NE
+                        moves.append(
+                            (move, origin,
+                             [(row - 1, col - 1), (row - 1, col), (row - 1, col + 1)]))
+                        print_move_detail((move, origin,
+                                           [(row - 1, col - 1), (row - 1, col), (row - 1, col + 1)]))
+                    if col != len(location_matrix[row]) - 3 and location_matrix[row - 1][col - 1] == 0 and \
+                            location_matrix[row - 1][col] == 0 and location_matrix[row - 1][
+                        col - 2] == 0:  # NW only available in the middle of board
+                        moves.append(
+                            (move, origin,
+                             [(row - 1, col), (row - 1, col + 1), (row - 1, col + 2)]))
+                        print_move_detail((move, origin,
+                                           [(row - 1, col), (row - 1, col + 1), (row - 1, col + 2)]))
+                    col += 3
+
+                if 4 < row < 8:
+                    if col == 0 and location_matrix[row - 1][col] == 0 and location_matrix[row - 1][col + 1] == 0 and \
+                            location_matrix[row - 1][col + 2] == 0:
+                        moves.append(
+                            (move, origin,
+                             [(row - 1, col + 1), (row - 1, col + 2), (row - 1, col + 2)]))
+                        print_move_detail((move, origin,
+                                           [(row - 1, col), (row - 1, col + 1), (row - 1, col + 2)]))
+                    if location_matrix[row - 1][col + 1] == 0 and location_matrix[row - 1][col + 2] == 0 and \
+                            location_matrix[row - 1][col + 3] == 0:  # NE
+                        moves.append(
+                            (move, origin,
+                             [(row - 1, col + 1), (row - 1, col + 2), (row - 1, col + 3)]))
+                        print_move_detail((move, origin,
+                                           [(row - 1, col + 1), (row - 1, col + 2), (row - 1, col + 3)]))
+                    if col != 0 and location_matrix[row - 1][col] == 0 and location_matrix[row - 1][
+                        col + 1] == 0 and location_matrix[row - 1][col + 2] == 0:  # NW
+                        moves.append(
+                            (move, origin,
+                             [(row - 1, col), (row - 1, col + 1), (row - 1, col + 2)]))
+                        print_move_detail((move, origin,
+                                           [(row - 1, col), (row - 1, col + 1), (row - 1, col + 2)]))
+                    if col != 0 and location_matrix[row + 1][col - 1] == 0 and location_matrix[row + 1][
+                        col] == 0 and location_matrix[row + 1][col + 1] == 0:  # SW
+                        moves.append(
+                            (move, origin,
+                             [(row + 1, col - 1), (row + 1, col), (row + 1, col + 1)]))
+                        print_move_detail((move, origin,
+                                           [(row + 1, col - 1), (row + 1, col), (row + 1, col + 1)]))
+                    if col != len(location_matrix[row]) - 3 and location_matrix[row + 1][col] == 0 and \
+                            location_matrix[row + 1][col + 1] == 0 and location_matrix[row + 1][
+                        col + 2] == 0:  # NW only available in the middle of board
+                        moves.append(
+                            (move, origin,
+                             [(row + 1, col), (row + 1, col + 1), (row + 1, col + 2)]))
+                        print_move_detail((move, origin,
+                                           [(row + 1, col), (row + 1, col + 1), (row + 1, col + 2)]))
+                    col += 3
+                if row == 4:
+                    if not col == len(location_matrix[row]) - 3 and location_matrix[row - 1][col] == 0 and \
+                            location_matrix[row - 1][col + 1] == 0 and location_matrix[row - 1][col + 2] == 0:  # NE
+                        moves.append(
+                            (move, origin,
+                             [(row - 1, col), (row - 1, col + 1), (row - 1, col + 2)]))
+                        print_move_detail((move, origin,
+                                           [(row - 1, col), (row - 1, col + 1), (row - 1, col + 2)]))
+                    if not col == 0 and location_matrix[row - 1][col - 1] == 0 and location_matrix[row - 1][
+                        col] == 0 and location_matrix[row - 1][col + 1] == 0:  # NW
+                        moves.append(
+                            (move, origin,
+                             [(row - 1, col - 1), (row - 1, col), (row - 1, col + 1)]))
+                        print_move_detail((move, origin,
+                                           [(row - 1, col - 1), (row - 1, col), (row - 1, col + 1)]))
+                    if not col == 0 and location_matrix[row + 1][col - 1] == 0 and location_matrix[row + 1][
+                        col] == 0 and location_matrix[row + 1][col + 1] == 0:  # SW
+                        moves.append(
+                            (move, origin,
+                             [(row + 1, col - 1), (row + 1, col), (row + 1, col + 1)]))
+                        print_move_detail((move, origin,
+                                           [(row + 1, col - 1), (row + 1, col), (row + 1, col + 1)]))
+                    if not col == len(location_matrix[row]) - 3 and location_matrix[row + 1][col] == 0 and \
+                            location_matrix[row + 1][col + 1] == 0 and location_matrix[row + 1][col + 2] == 0:  # SE
+                        moves.append(
+                            (move, origin,
+                             [(row + 1, col), (row + 1, col + 1), (row + 1, col + 2)]))
+                        print_move_detail((move, origin,
+                                           [(row + 1, col), (row + 1, col + 1), (row + 1, col + 2)]))
+                    col += 3
+            else:
+                col += 1
+        row += 1
+    return moves
+
+
+def generate_side_step_two_marbles(location_matrix, color):
+    moves = []  # (move type, [start locations], [end locations])
+    move = "SS"
+
+    # TODO: generate diagonal two marbles NW/SW
+
+    # TODO: generate diagonal two marbles NE/SW
 
     # This check the horizontal of two marbles
     row = 0
@@ -280,69 +468,71 @@ def generate_side_step_two_marbles(location_matrix, color):
         col = 0
         while col < len(location_matrix[row]):
             location = (row, col)
-
-            if location_matrix[row][col] == color and location_matrix[row][col + 1] == color:
+            if col == len(location_matrix[row]) - 1:
+                col += 1
+            elif location_matrix[row][col] == color and location_matrix[row][
+                col + 1] == color:  # run into problem when 3 in a row
                 # this mean it's second to last only two can be make
                 if row == 0:
                     if location_matrix[row + 1][col + 2] == 0 and location_matrix[row + 1][col + 1] == 0:  # SE
 
-                        move_lst.append((move, [location, (row, col + 1)], [(row + 1, col + 1), (row + 1, col + 2)]))
-                    if location_matrix[row + 1][col] == 0 and location_matrix[row + 1][col] == 0:  # SW
-                        move_lst.append((move, [location, (row, col + 1)], [(row + 1, col), (row + 1, col + 1)]))
+                        moves.append((move, [location, (row, col + 1)], [(row + 1, col + 1), (row + 1, col + 2)]))
+                    if location_matrix[row + 1][col] == 0 and location_matrix[row + 1][col + 1] == 0:  # SW
+                        moves.append((move, [location, (row, col + 1)], [(row + 1, col), (row + 1, col + 1)]))
                     col += 2
 
                 if row == 8:
                     if location_matrix[row - 1][col + 1] == 0 and location_matrix[row - 1][col + 2] == 0:  # NE
-                        move_lst.append(
+                        moves.append(
                             (move, [location, (row, col + 1)], [(row - 1, col + 1), (row - 1, col + 2)]))
                     if location_matrix[row - 1][col] == 0 and location_matrix[row - 1][col + 1] == 0:  # NW
-                        move_lst.append(
+                        moves.append(
                             (move, [location, (row, col + 1)], [(row - 1, col), (row - 1, col + 1)]))
                     col += 2
 
                 if 0 < row < 4:
                     if col == 0 and location_matrix[row + 1][col] == 0 and location_matrix[row + 1][col + 1] == 0:
-                        move_lst.append(
+                        moves.append(
                             (move, [location, (row, col + 1)], [(row + 1, col), (row + 1, col + 1)]))
                         print(coordinates_to_notation(row + 1, col), coordinates_to_notation(row + 1, col + 1))
                     if location_matrix[row + 1][col + 1] == 0 and location_matrix[row + 1][col + 2] == 0:  # SE
-                        move_lst.append(
+                        moves.append(
                             (move, [location, (row, col + 1)], [(row + 1, col + 1), (row + 1, col + 2)]))
                         print(coordinates_to_notation(row + 1, col + 1), coordinates_to_notation(row + 1, col + 2))
                     if not col == 0 and location_matrix[row + 1][col] == 0 and location_matrix[row + 1][
                         col + 1] == 0:  # SW
-                        move_lst.append(
+                        moves.append(
                             (move, [location, (row, col + 1)], [(row + 1, col), (row + 1, col + 1)]))
                         print(coordinates_to_notation(row + 1, col), coordinates_to_notation(row + 1, col + 1))
                     if not col == 0 and location_matrix[row - 1][col - 1] == 0 and location_matrix[row - 1][
                         col] == 0:  # NE
-                        move_lst.append(
+                        moves.append(
                             (move, [location, (row, col + 1)], [(row - 1, col - 1), (row - 1, col)]))
                         print(coordinates_to_notation(row - 1, col - 1), coordinates_to_notation(row - 1, col))
                     if not col == len(location_matrix[row]) - 2 and location_matrix[row - 1][col - 1] == 0 and \
                             location_matrix[row - 1][col] == 0:  # NW only available in the middle of board
-                        move_lst.append(
+                        moves.append(
                             (move, [location, (row, col + 1)], [(row - 1, col), (row - 1, col + 1)]))
                         print(coordinates_to_notation(row - 1, col), coordinates_to_notation(row - 1, col + 1))
                     col += 2
                 if 4 < row < 8:
                     if location_matrix[row - 1][col + 1] == 0 and location_matrix[row - 1][col + 2] == 0:  # NE
-                        move_lst.append(
+                        moves.append(
                             (move, [location, (row, col + 1)], [(row - 1, col + 1), (row - 1, col + 2)]))
                         print(coordinates_to_notation(row - 1, col + 1), coordinates_to_notation(row - 1, col + 2))
                     if not col == 0 and location_matrix[row - 1][col] == 0 and location_matrix[row - 1][
                         col + 1] == 0:  # NW
-                        move_lst.append(
+                        moves.append(
                             (move, [location, (row, col + 1)], [(row - 1, col), (row - 1, col + 1)]))
                         print(coordinates_to_notation(row - 1, col), coordinates_to_notation(row - 1, col + 1))
                     if not col == 0 and location_matrix[row + 1][col - 1] == 0 and location_matrix[row + 1][
                         col] == 0:  # SW
-                        move_lst.append(
+                        moves.append(
                             (move, [location, (row, col + 1)], [(row + 1, col - 1), (row + 1, col)]))
                         print(coordinates_to_notation(row + 1, col - 1), coordinates_to_notation(row + 1, col))
                     if not col == len(location_matrix[row]) - 2 and location_matrix[row + 1][col] == 0 and \
                             location_matrix[row + 1][col + 1] == 0:  # NW only available in the middle of board
-                        move_lst.append(
+                        moves.append(
                             (move, [location, (row, col + 1)], [(row + 1, col), (row + 1, col + 1)]))
                         print(coordinates_to_notation(row + 1, col), coordinates_to_notation(row + 1, col + 1))
                     col += 2
@@ -350,32 +540,32 @@ def generate_side_step_two_marbles(location_matrix, color):
                     print(col)
                     if not col == len(location_matrix[row]) - 2 and location_matrix[row - 1][col] == 0 and \
                             location_matrix[row - 1][col + 1] == 0:  # NE
-                        move_lst.append(
+                        moves.append(
                             (move, [location, (row, col + 1)], [(row - 1, col), (row - 1, col + 1)]))
                         print(coordinates_to_notation(row - 1, col), coordinates_to_notation(row - 1, col + 1))
                     if not col == 0 and location_matrix[row - 1][col - 1] == 0 and location_matrix[row - 1][
                         col] == 0:  # NW
-                        move_lst.append(
+                        moves.append(
                             (move, [location, (row, col + 1)], [(row - 1, col - 1), (row - 1, col)]))
                         print(coordinates_to_notation(row - 1, col - 1), coordinates_to_notation(row - 1, col))
                     if not col == 0 and location_matrix[row + 1][col - 1] == 0 and location_matrix[row + 1][
                         col] == 0:  # SW
-                        move_lst.append(
+                        moves.append(
                             (move, [location, (row, col + 1)], [(row + 1, col - 1), (row + 1, col)]))
                         print(coordinates_to_notation(row + 1, col - 1), coordinates_to_notation(row + 1, col))
                     if not col == len(location_matrix[row]) - 2 and location_matrix[row + 1][col] == 0 and \
                             location_matrix[row + 1][col + 1] == 0:  # SE
-                        move_lst.append(
+                        moves.append(
                             (move, [location, (row, col + 1)], [(row + 1, col), (row + 1, col + 2)]))
                         print(coordinates_to_notation(row + 1, col), coordinates_to_notation(row + 1, col + 1))
                     col += 2
             else:
                 col += 1
         row += 1
-    return move_lst
+    return moves
 
 
-def check_in_line(location_matrix, location, num_of_marble, direction):
+def check_inline(location_matrix, num_of_marbles, direction):
     pass
 
 
@@ -391,27 +581,34 @@ def generate_moves(location_matrix, color):
             if location_matrix[row][col] == color:
                 color_location.append((row, col))
     moves = []
+    # TODO: pass in color location one by one to get the moves, there will be some duplicates of move
 
     # for coordinate in color_location:
     #     m = check_single_marble_move(location_matrix, coordinate)
     #     for n in m:
     #         moves.append(n)
-    print(color_location)
+    # print(color_location)
 
     # generate ss two marbles
     # Need to find two clusters
-    m = generate_side_step_two_marbles(location_matrix, color)
-    for n in m:
-        moves.append(n)
+    # m = generate_side_step_two_marbles(location_matrix, color)
+    # for n in m:
+    #     moves.append(n)
     # print(moves)
     # print(len(moves))
 
     # generate ss three marbles
+    # m = generate_side_step_three_marbles(location_matrix, color)
+    # for n in m:
+    #     moves.append(n)
+    # print(moves)
+    # print(len(moves))
 
-    # generate inline two marbles
+    # TODO: generate inline two marbles
 
-    # generate inline three marbles
+    # TODO: generate inline three marbles
 
+    # TODO: after all moves generated pass into make board and remove duplicates
     pass
 
 
