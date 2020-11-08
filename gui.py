@@ -95,11 +95,12 @@ def draw_board(canvas, matrix):
 
 
 def validate_input(move_str):
-    # Need to implement
+    # TODO Need to implement
     pass
 
 
 def update_board(move_str):
+    # TODO move base on user input
     # Get the starting row, column and ending row, column of a marble
     # Currently only work with moving single marble
     start_row = location_dict[move[0]]
