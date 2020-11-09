@@ -1,10 +1,10 @@
 import move_generator, GenerateBoard
-import os
+import PySimpleGUI as sg
 
 
 def main():
     test_number = input("please enter test number: ")
-    matrix, player_color = move_generator.get_input("Test"+str(test_number)+".input")
+    matrix, player_color = move_generator.get_input("Test" + str(test_number) + ".input")
     move_dict = move_generator.generate_moves(matrix, player_color)
     # output into test#.move
     for move_notation in move_dict['inline_ply_moves']:
@@ -16,7 +16,7 @@ def main():
             file.write("'{}', {} => {}\n".format(move_notation[0], move_notation[1], move_notation[2]))
 
     # generate board
-    board = GenerateBoard.readInputFile("Test"+str(test_number)+".input")['board']
+    board = GenerateBoard.readInputFile("Test" + str(test_number) + ".input")['board']
     for move_notation in move_dict['inline_ply_moves']:
         move_notation_for_board = [move_notation[0]]
         start_coords = []
@@ -33,7 +33,7 @@ def main():
         # output to test#.board
         with open("Test" + str(test_number) + ".board", 'a', encoding='utf-8') as file:
             file.write("")
-            for index in range(0, len(result_board)-1):
+            for index in range(0, len(result_board) - 1):
                 file.write(result_board[index])
                 file.write(",")
             file.write(result_board[-1])
@@ -54,13 +54,13 @@ def main():
         result_board = GenerateBoard.generate_result_board(move_notation_for_board, board)['board']
         # output to test#.board
         with open("Test" + str(test_number) + ".board", 'a', encoding='utf-8') as file:
-            for index in range(0, len(result_board)-1):
+            for index in range(0, len(result_board) - 1):
                 file.write(result_board[index])
                 file.write(",")
             file.write(result_board[-1])
             file.write("\n")
 
-    move_generator.show_grid(matrix)
+    # move_generator.show_grid(matrix)
 
 
 if __name__ == '__main__':

@@ -90,8 +90,8 @@ def generate_moves(matrix, player_color):
     return {'inline_ply_moves': inline_ply_moves,
             'sidestep_ply_moves': sidestep_ply_moves,
             'inline_opp_moves': inline_opp_moves}
-    
-    
+
+
 def generate_inline(color, location_matrix):
     """
     Generates inline moves (for 1, 2, or 3 marbles).
@@ -111,7 +111,7 @@ def generate_inline(color, location_matrix):
         for x, y in locations:
             old_position = [coord_dict[(x, y)][0] + str(coord_dict[(x, y)][1])]
             new_points = move(x, y)
-            if new_points not in locations and new_points != (-1, -1) and check_if_legal(new_points[0], new_points[1])\
+            if new_points not in locations and new_points != (-1, -1) and check_if_legal(new_points[0], new_points[1]) \
                     and new_points not in opp_loc:
                 new_position = [coord_dict[new_points][0] + str(coord_dict[new_points][1])]
                 move_notation.append(("I", old_position, new_position))
@@ -132,7 +132,8 @@ def generate_inline(color, location_matrix):
                 old_position = []
                 old_opp_pos = []
 
-                if new_points not in locations and new_points != (-1, -1) and check_if_legal(new_points[0], new_points[1]):
+                if new_points not in locations and new_points != (-1, -1) and check_if_legal(new_points[0],
+                                                                                             new_points[1]):
                     pp = move(chain[0][0], chain[0][1])
 
                     if pp in opp_chain:
@@ -145,7 +146,8 @@ def generate_inline(color, location_matrix):
                             if new_opp_coord == (-1, -1):
                                 pass
                             else:
-                                new_opp_position.append(coord_dict[new_opp_coord][0] + str(coord_dict[new_opp_coord][1]))
+                                new_opp_position.append(
+                                    coord_dict[new_opp_coord][0] + str(coord_dict[new_opp_coord][1]))
                         opp_move_notation.append(("I", old_opp_pos, new_opp_position))
 
                     for i in chain:
@@ -288,6 +290,7 @@ def get_left_diag(current_coord, num_marbles, location_matrix):
         if current_coord in location_matrix:
             chain.append(current_coord)
     return chain
+
 
 def get_right_diag(current_coord, num_marbles, location_matrix):
     """
@@ -470,7 +473,11 @@ def move_11(x, y):
     return point
 
 
-matrix, player_color = get_input("Test1.input")
-generate_moves(matrix, player_color)
-show_grid(matrix)
+def main():
+    matrix, player_color = get_input("Test1.input")
+    generate_moves(matrix, player_color)
+    show_grid(matrix)
 
+
+if __name__ == '__main__':
+    main()
