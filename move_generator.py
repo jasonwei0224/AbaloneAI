@@ -42,7 +42,6 @@ def get_input(file_name):
         color = 1 if value[2] == 'w' else 2
         location_matrix[row][col] = color
 
-    print(location_matrix)
     return location_matrix, player_color
 
 
@@ -95,8 +94,7 @@ def generate_inline(color, location_matrix):
     Generates inline moves (for 1, 2, or 3 marbles).
     :return:
     """
-    player = 1 if color == "w" else 2
-
+    player = 1 if color[0] == 'w' else 2
     locations = [(ix, iy) for ix, row in enumerate(location_matrix) for iy, i in enumerate(row) if i == player]
     opp_loc = [(ix, iy) for ix, row in enumerate(location_matrix) for iy, i in enumerate(row) if i != player and i != 0]
 
@@ -208,7 +206,7 @@ def generate_sidestep(color, location_matrix):
     :param location_matrix:
     :return:
     """
-    player = 1 if color == "w" else 2
+    player = 1 if color[0] == 'w' else 2
 
     locations = [(ix, iy) for ix, row in enumerate(location_matrix) for iy, i in enumerate(row) if i == player]
     opp_loc = [(ix, iy) for ix, row in enumerate(location_matrix) for iy, i in enumerate(row) if i != player and i != 0]
@@ -469,7 +467,7 @@ def move_11(x, y):
     return point
 
 
-matrix, player_color = get_input("Test2.input")
+matrix, player_color = get_input("Test1.input")
 generate_moves(matrix, player_color)
 show_grid(matrix)
 
