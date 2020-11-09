@@ -161,24 +161,31 @@ def generate_move_notation(raw_move_notation, adj_lst):
             row = notation_to_coordinates(raw_move_notation[move][1])[0]
             col = notation_to_coordinates(raw_move_notation[move][1])[1]
             second_marble = get_marble_with_direction(adj_lst, raw_move_notation[move][1], direction)
+            print(second_marble)
             second_row, second_col = notation_to_coordinates(second_marble)
             m.append([(row, col), (second_row, second_col)])
-            dest_marble = get_marble_with_direction(adj_lst,second_marble, direction)
-            dest_marble2 = get_marble_with_direction(adj_lst, dest_marble, direction)
+
+            dest_marble = get_marble_with_direction(adj_lst,raw_move_notation[move][1], direction)
+            dest_marble2 = get_marble_with_direction(adj_lst, second_marble, direction)
+            print(dest_marble, dest_marble2)
             dest_marble_row, dest_marble_col = notation_to_coordinates(dest_marble)
             dest_marble2_row, dest_marble2_col = notation_to_coordinates(dest_marble2)
+
             m.append([(dest_marble_row, dest_marble_col), (dest_marble2_row, dest_marble2_col)])
         elif int(raw_move_notation[move][2]) == 3:
             row = notation_to_coordinates(raw_move_notation[move][1])[0]
             col = notation_to_coordinates(raw_move_notation[move][1])[1]
+
             second_marble = get_marble_with_direction(adj_lst, raw_move_notation[move][1], direction)
             second_row, second_col = notation_to_coordinates(second_marble)
+
             third_marble = get_marble_with_direction(adj_lst,second_marble, direction)
             third_row, third_col = notation_to_coordinates(third_marble)
             m.append([(row, col), (second_row, second_col), (third_row, third_col)])
-            dest_marble = get_marble_with_direction(adj_lst, second_marble, direction)
-            dest_marble2 = get_marble_with_direction(adj_lst, dest_marble, direction)
-            dest_marble3 = get_marble_with_direction(adj_lst, dest_marble2, direction)
+
+            dest_marble = get_marble_with_direction(adj_lst, raw_move_notation[move][1], direction)
+            dest_marble2 = get_marble_with_direction(adj_lst, second_marble, direction)
+            dest_marble3 = get_marble_with_direction(adj_lst, third_marble, direction)
             dest_marble_row, dest_marble_col = notation_to_coordinates(dest_marble)
             dest_marble2_row, dest_marble2_col = notation_to_coordinates(dest_marble2)
             dest_marble3_row, dest_marble3_col = notation_to_coordinates(dest_marble3)
@@ -327,6 +334,7 @@ def generate_inline(location_matrix, adjacent_marble, adj_lst, direction, color,
 
     elif adjacent_marble in user_lst:
 
+
         adj_marble = get_marble_with_direction(adj_lst, adjacent_marble, direction)
         return generate_inline(location_matrix, adj_marble, adj_lst, direction, color,
                                user_lst, opp_lst,
@@ -339,36 +347,36 @@ def generate_move(location_matrix, color, user_lst, opp_lst):
             loc[coordinates_to_notation(row, col)] = get_all_locations(row, col, len(location_matrix),
                                                                        len(location_matrix[row]))
     raw_move_notation = []
-    # for key in loc.keys():
-    #     for value in loc[key]:
-    #         row = notation_to_coordinates(value[0])[0]
-    #         col = notation_to_coordinates(value[0])[1]
-    #         key_row = notation_to_coordinates(key)[0]
-    #         key_col = notation_to_coordinates(key)[1]
-    #         if location_matrix[key_row][key_col] == color or location_matrix[row][col] == 0 and location_matrix[row][
-    #             col] == color:
-    #             direction = generate_inline(location_matrix, value[0], loc, value[1], color, user_lst, opp_lst, 1, 0)
-    #             if direction is not None:
-    #                 # move type, move marble, number of marble to move, direction to move
-    #                 raw_move_notation.append(["I", key, direction[0], direction[1], direction[2]])
-    #                 # print("I " + key + " "+ str(direction[1]) + "num of marbles " + str(direction[0]))
-    # generate_move_notation(raw_move_notation, loc)
-    print(loc['A1'])
-    parsed = []
     for key in loc.keys():
-
         for value in loc[key]:
             row = notation_to_coordinates(value[0])[0]
             col = notation_to_coordinates(value[0])[1]
             key_row = notation_to_coordinates(key)[0]
             key_col = notation_to_coordinates(key)[1]
-            if location_matrix[key_row][key_col] == color and location_matrix[row][col] == color\
-                    and value[0] not in parsed:
-                parsed.append(key)
+            if location_matrix[key_row][key_col] == color or location_matrix[row][col] == 0 and location_matrix[row][
+                col] == color:
+                direction = generate_inline(location_matrix, value[0], loc, value[1], color, user_lst, opp_lst, 1, 0)
+                if direction is not None:
+                    # move type, move marble, number of marble to move, direction to move
+                    # print(["I", key, direction[0], direction[1], direction[2]])
+                    raw_move_notation.append(["I", key, direction[0], direction[1], direction[2]])
+    print_move_detail(generate_move_notation(raw_move_notation, loc))
 
-                move = generate_side_step(key, location_matrix, loc, color, parsed)
-                # if move is not None:
-                #     print("SS", key, move)
+    # parsed = []
+    # for key in loc.keys():
+    #
+    #     for value in loc[key]:
+    #         row = notation_to_coordinates(value[0])[0]
+    #         col = notation_to_coordinates(value[0])[1]
+    #         key_row = notation_to_coordinates(key)[0]
+    #         key_col = notation_to_coordinates(key)[1]
+    #         if location_matrix[key_row][key_col] == color and location_matrix[row][col] == color\
+    #                 and value[0] not in parsed:
+    #             parsed.append(key)
+    #
+    #             move = generate_side_step(key, location_matrix, loc, color, parsed)
+    #             # if move is not None:
+    #             #     print("SS", key, move)
 
 def generate_side_step(marble, location_matrix, adj_lst, color, parsed):
     dir_available = []
