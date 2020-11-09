@@ -104,21 +104,10 @@ def targetAdj(marble_positions: []):
     print("nearby coordinates for ", marble_positions, " are: ", nearbyCoordinates)
     return nearbyCoordinates
 
-"""
-move notation example: ['inline', ['G4w', 'H5w', 'I6w'], ['F3w','G4w','H5w']]
-"""
-# def generate_available_move(move_notation: [], board_taken_coordinates: []):
-#     nearby = targetAdj(move_notation[1])
-#     for available_coordinate in nearby:
-#
-#     return
-
-
 def main():
     board = readInputFile('Test1.input')['board']
     targetAdj(['G4w', 'H5w', 'I6w'])
     targetAdj(['G4w'])
-
 
 if __name__ == '__main__':
     main()

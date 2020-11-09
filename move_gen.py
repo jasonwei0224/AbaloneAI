@@ -306,5 +306,5 @@ def show_grid(location_matrix):
     event, values = window.read()
 
 
-matrix, color, user_lst, opp_lst = get_input("Test3.input")
+matrix, color, user_lst, opp_lst = get_input("Test1.input")
 show_grid(matrix)
