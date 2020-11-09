@@ -225,7 +225,7 @@ def get_all_locations(row, col, m, n):
 
     # when on corner (E.g. A1)
     if row == 8 and col == 0:
-        adjacent_lst.append((coordinates_to_notation(row - 1, col + 11), 1))
+        adjacent_lst.append((coordinates_to_notation(row - 1, col + 1), 1))
         adjacent_lst.append((coordinates_to_notation(row - 1, col), 11))
         adjacent_lst.append((coordinates_to_notation(row, col + 1), 3))
     # when on corner (E.g. A5)
@@ -284,9 +284,16 @@ def get_all_locations(row, col, m, n):
         adjacent_lst.append((coordinates_to_notation(row, col - 1), 9))
         adjacent_lst.append((coordinates_to_notation(row + 1, col + 1), 5))
         adjacent_lst.append((coordinates_to_notation(row, col + 1), 3))
-    if 4 <= row < 8 and 0 < col < n - 1:
+    if 4 < row < 8 and 0 < col < n - 1:
         adjacent_lst.append((coordinates_to_notation(row - 1, col), 11))
         adjacent_lst.append((coordinates_to_notation(row - 1, col + 1), 1))
+        adjacent_lst.append((coordinates_to_notation(row + 1, col), 5))
+        adjacent_lst.append((coordinates_to_notation(row, col - 1), 9))
+        adjacent_lst.append((coordinates_to_notation(row + 1, col - 1), 7))
+        adjacent_lst.append((coordinates_to_notation(row, col + 1), 3))
+    if row == 4 and 0 < col < n - 1:
+        adjacent_lst.append((coordinates_to_notation(row - 1, col), 1))
+        adjacent_lst.append((coordinates_to_notation(row - 1, col - 1), 11))
         adjacent_lst.append((coordinates_to_notation(row + 1, col), 5))
         adjacent_lst.append((coordinates_to_notation(row, col - 1), 9))
         adjacent_lst.append((coordinates_to_notation(row + 1, col - 1), 7))
@@ -346,7 +353,7 @@ def generate_move(location_matrix, color, user_lst, opp_lst):
     #                 raw_move_notation.append(["I", key, direction[0], direction[1], direction[2]])
     #                 # print("I " + key + " "+ str(direction[1]) + "num of marbles " + str(direction[0]))
     # generate_move_notation(raw_move_notation, loc)
-
+    print(loc['A1'])
     parsed = []
     for key in loc.keys():
 
@@ -462,19 +469,45 @@ def generate_side_step(marble, location_matrix, adj_lst, color, parsed):
                 if dir == 1:
                     if col ==0 and col2 ==0:
                         moves.append(['SS', [(row, col), (row2, col2)], [(row-1, col), (row2-1, col2+1)]])
+                    elif row ==5 or row2 == 5:
+                        moves.append(['SS', [(row, col), (row2, col2)], [(row - 1, col), (row2 - 1, col2+1)]])
+                    elif col == len(location_matrix[row]) - 1 or col2 == len(location_matrix[row2]) - 1:
+                        pass
                     else:
                         moves.append(['SS', [(row, col), (row2, col2)], [(row - 1, col), (row2 - 1, col2)]])
                 if dir == 3:
-                    moves.append(['SS', [(row, col), (row2, col2)], [(row, col+1), (row2, col2+1)]])
+                    if col == len(location_matrix[row]) - 1 or col2 == len(location_matrix[row2]) - 1:
+                        pass
+                    else:
+                        moves.append(['SS', [(row, col), (row2, col2)], [(row, col+1), (row2, col2+1)]])
                 if dir == 5:
-                    moves.append(['SS', [(row, col), (row2, col2)], [(row+1, col+1), (row2+1, col2)]])
+                    if row == 4and row2 ==4 and col != len(location_matrix[row]) - 1 and col2 != len(location_matrix[row2]) - 1:
+                        moves.append(['SS', [(row, col), (row2, col2)], [(row + 1, col), (row2 + 1, col2)]])
+                    elif row == 5 or row2 == 5:
+                        moves.append(['SS', [(row, col), (row2, col2)], [(row +1, col), (row2 + 1, col2)]])
+                    elif col == len(location_matrix[row]) - 1 or col2 == len(location_matrix[row2]) - 1:
+                        pass
+                    else:
+                        moves.append(['SS', [(row, col), (row2, col2)], [(row+1, col+1), (row2+1, col2)]])
                 if dir == 7:
-                    moves.append(['SS', [(row, col), (row2, col2)], [(row+1, col), (row2+1, col2-1)]])
+                    if row == 4 and row2 == 4 and col == len(location_matrix[row]) - 1 or col2 == len(location_matrix[row2]) - 1:
+                        moves.append(['SS', [(row, col), (row2, col2)], [(row + 1, col - 1), (row2 + 1, col2 - 1)]])
+                    elif row == 5 or row2 == 5:
+                        moves.append(['SS', [(row, col), (row2, col2)], [(row+1, col-1), (row2+1, col2-1)]])
+                    elif col == len(location_matrix[row]) - 1 or col2 == len(location_matrix[row2]) - 1:
+                        pass
+                    else:
+                        moves.append(['SS', [(row, col), (row2, col2)], [(row+1, col), (row2+1, col2-1)]])
                 if dir == 9:
-                    moves.append(['SS', [(row, col), (row2, col2)], [(row, col-1), (row2, col2-1)]])
+                    if row == 5 or row2 == 5 and col ==0 or col2 ==0:
+                        pass
+                    else:
+                       moves.append(['SS', [(row, col), (row2, col2)], [(row, col-1), (row2, col2-1)]])
                 if dir == 11:
-
-                    moves.append(['SS', [(row, col), (row2, col2)], [(row - 1, col), (row2 - 1, col2)]])
+                    if row == 5 or row2 == 5:
+                        moves.append(['SS', [(row, col), (row2, col2)], [(row - 1, col-1), (row2 - 1, col2)]])
+                    else:
+                        moves.append(['SS', [(row, col), (row2, col2)], [(row - 1, col-1), (row2 - 1, col2-1)]])
 
             if row2 == 8 or row == 8:
                 if dir == 1:
@@ -485,23 +518,25 @@ def generate_side_step(marble, location_matrix, adj_lst, color, parsed):
                     else:
                         moves.append(['SS', [(row, col), (row2, col2)], [(row, col + 1), (row2, col2 + 1)]])
                 if dir == 5:
-                    print(col, col2)
+                    # print(col, col2)
                     if row2 == 8 or row == 8:
-                        print('s')
+                        # print('s')
                         pass
                     else:
                         moves.append(['SS', [(row, col), (row2, col2)], [(row + 1, col), (row2 + 1, col2)]])
                 if dir == 7:
-                    print("NA")
+                    pass
                     # moves.append(['SS', [(row, col), (row2, col2)], [(row + 1, col - 1), (row2 + 1, col2 - 1)]])
                 if dir == 9:
-                    moves.append(['SS', [(row, col), (row2, col2)], [(row, col - 1), (row2, col2 - 1)]])
+                    if col == 0 or col2 == 0:
+                        pass
+                    else:
+                        moves.append(['SS', [(row, col), (row2, col2)], [(row, col - 1), (row2, col2 - 1)]])
                 if dir == 11:
-                    # print("NA")
                     moves.append(['SS', [(row, col), (row2, col2)], [(row - 1, col), (row2 - 1, col2)]])
 
 
-    print(dir_available)
+    # print(dir_available)
     # print(marbles_to_move)
     # print(moves)
     print_move_detail(moves)
