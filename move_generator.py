@@ -99,11 +99,21 @@ def get_value(s, location_matrix):
     """
     Return the value at the given location
     :param s: The coordinate of the location in stirng E.g. "H4"
-    :param location_matrix: matrix representation of abalone obard
+    :param location_matrix: matrix representation of abalone board
     :return: the value 1: white, 2: black, 0: empty
     """
     row = int(constant.LOCATION_DICT[s[0]])
     col = int(s[1]) - constant.LETTER_AND_NUM_OFFSET[constant.LOCATION_DICT[s[0]]][1]
+    return location_matrix[row][col]
+
+def get_value_row_col(row, col, location_matrix):
+    """
+    Return the value at the given location
+    :param row: int row value of the location
+    :param col: int col value of the locaiton
+    :param location_matrix: matrix representation of abalone board
+    :return: the value 1: white, 2: black, 0: empty
+    """
     return location_matrix[row][col]
 
 def get_marble_with_direction(adj_lst, marble, direction):
@@ -118,6 +128,9 @@ def get_marble_with_direction(adj_lst, marble, direction):
         if m[1] == direction:
             adj_marble = m
             return adj_marble[0]
+
+def get_direction_with_two_marble():
+    pass
 
 
 def get_all_locations(row, col, m, n):
@@ -598,8 +611,28 @@ def generate_side_step_two_marbles(location_matrix, color):
 
 
 
+
 def generate_new_board(location_matrix, moves):
-    # generate new board based on provided moves
+
+    for m in moves:
+        type = m[0]
+        origin = m[1]
+        destination = m[2]
+
+        # if side step we just directly update the board
+        if type == "SS":
+            for coord in destination:
+                location_matrix[coord[0]][coord[1]] = location_matrix[origin[0][0]][origin[0][1]]
+            for coord in origin:
+                location_matrix[coord[0]][coord[1]] = 0
+        if type == "I":
+            # if not empty then need to push might need the direction to push to?
+
+            # if empty move directly
+
+            pass
+
+
     pass
 
 
