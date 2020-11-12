@@ -16,11 +16,14 @@ letter_and_numOffset = {0: ('I', 5), 1: ('H', 4), 2: ('G', 3), 3: ('F', 2), 4: (
 
 # Configuration window layout
 config_layout = [[sg.Text('Select Initial Board Layout', text_color="yellow")],
-                 [sg.Radio(board, 1, default=True, key=str(board)) if board == 'Standard' else sg.Radio(board, 1, key=str(board)) for board in
+                 [sg.Radio(board, 1, default=True, key=str(board)) if board == 'Standard' else sg.Radio(board, 1,
+                                                                                                        key=str(board))
+                  for board in
                   board_choice],
                  [sg.VerticalSeparator(pad=((0, 0), (10, 20)))],
                  [sg.Text('Select Player Color', text_color="yellow")],
-                 [sg.Radio(color, 2, default=True, key="Black") if color == 'Black' else sg.Radio(color, 2, key='White') for color in
+                 [sg.Radio(color, 2, default=True, key="Black") if color == 'Black' else sg.Radio(color, 2, key='White')
+                  for color in
                   player_color],
                  [sg.VerticalSeparator(pad=((0, 0), (10, 20)))],
                  [sg.Text('Select Game Mode', text_color="yellow")],
@@ -36,6 +39,7 @@ config_layout = [[sg.Text('Select Initial Board Layout', text_color="yellow")],
                   sg.Spin([i for i in range(1, 11)], initial_value=1, key="p2_time_limit")],
                  [sg.OK("Start", pad=((10, 0), (50, 10))), sg.Cancel("Exit", pad=((20, 0), (50, 10)))]]
 
+
 # The layout for the game information including the canvas showing Abalone game board
 
 def generate_game_info_layout(player1_color, player2_color):
@@ -44,8 +48,10 @@ def generate_game_info_layout(player1_color, player2_color):
                         [sg.InputText("Please Enter your move", key='move'), sg.Button("Submit")],
                         [sg.Text('Next Move: ....'), ],
                         [sg.VerticalSeparator(pad=((0, 0), (10, 20)))],
-                        [sg.Text('Player 1: 0'), sg.Text('Player 1 color: ' + ("White" if player1_color == 1 else "Black"))],
-                        [sg.Text('Player 2: 0'), sg.Text('Player 2 color: ' + ("Black" if player2_color == 2 else "White"))],
+                        [sg.Text('Player 1: 0'),
+                         sg.Text('Player 1 color: ' + ("White" if player1_color == 1 else "Black"))],
+                        [sg.Text('Player 2: 0'),
+                         sg.Text('Player 2 color: ' + ("Black" if player2_color == 2 else "White"))],
                         [sg.Text('Time Taken by Player 1:   ')],
                         [sg.Text('Time Taken by Player 2:  ')],
                         [sg.VerticalSeparator(pad=((0, 0), (10, 20)))],
@@ -57,13 +63,11 @@ def generate_game_info_layout(player1_color, player2_color):
 
     return game_info_layout
 
-# the graph element that the board will be drawn on
-graph_element = sg.Graph((600, 600), (0, 300), (300, 0), key='graph')
-
 
 def draw_board(canvas, matrix):
     """
     This draws the Abalone game board with coordinates listed on each location
+    :param matrix: matrix representation of the abalone board
     :param canvas: the canavas on the GUI to be draw on
     :return: null
     """
@@ -89,11 +93,14 @@ def draw_board(canvas, matrix):
                 '{}'.format(letter_and_numOffset[row][0] + str(letter_and_numOffset[row][1] + col)),
                 (col * width + 20 + offset, row * width + 15), color="red")
 
+
 def validate_input(move_str):
-    # Need to implement
+    # TODO Need to implement
     pass
 
+
 def update_board(move_str):
+    # TODO move base on user input
     # Get the starting row, column and ending row, column of a marble
     # Currently only work with moving single marble
     start_row = location_dict[move[0]]
@@ -104,6 +111,7 @@ def update_board(move_str):
     # update the Abalone representation of the board
     selected_board[end_row][end_col + start_row] = selected_board[start_row][start_col]
     selected_board[start_row][start_col] = 0
+
 
 window = sg.Window('Game Configuration', config_layout, font=('arial', 15))
 
@@ -147,6 +155,9 @@ elif event == 'Start':
     p2_time_limit = window["p2_time_limit"].Get()
 
     window.close()  # Close the configuration window
+
+    # the graph element that the board will be drawn on
+    graph_element = sg.Graph((600, 600), (0, 300), (300, 0), key='graph')
 
     game_layout = [[graph_element, sg.Column(generate_game_info_layout(player1_color, player2_color))]]
     # Create the game window
