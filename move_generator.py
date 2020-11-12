@@ -84,9 +84,7 @@ def show_grid(location_matrix, ):
 def generate_moves(matrix, player_color):
     inline_ply_moves, inline_opp_moves = generate_inline(player_color, matrix)
     sidestep_ply_moves = generate_sidestep(player_color, matrix)
-    print("Inline", inline_ply_moves)
-    print("SS", sidestep_ply_moves)
-    print("Opposite moves", inline_opp_moves)
+
     return {'inline_ply_moves': inline_ply_moves,
             'sidestep_ply_moves': sidestep_ply_moves,
             'inline_opp_moves': inline_opp_moves}
@@ -475,7 +473,10 @@ def move_11(x, y):
 
 def main():
     matrix, player_color = get_input("Test1.input")
-    generate_moves(matrix, player_color)
+    resultDic = generate_moves(matrix, player_color)
+    print("Inline", resultDic['inline_ply_moves'])
+    print("SS", resultDic['sidestep_ply_moves'])
+    print("Opposite moves", resultDic['inline_opp_moves'])
     show_grid(matrix)
 
 
