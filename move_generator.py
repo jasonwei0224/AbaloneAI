@@ -1,39 +1,53 @@
 import constant
 import PySimpleGUI as sg
+import numpy as np
+
+# import gui
+
+location_dict = {"I": 0, "H": 1, "G": 2, "F": 3, "E": 4, "D": 5, "C": 6, "B": 7, "A": 8}
+
+# from the row number get the letter and the offset of the number for each location
+letter_and_numOffset = {0: ('I', 5), 1: ('H', 4), 2: ('G', 3), 3: ('F', 2), 4: ('E', 1), 5: ('D', 1), 6: ('C', 1),
+                        7: ('B', 1), 8: ('A', 1)}
+
+coord_dict = {(0, 0): ["I", 5], (0, 1): ["I", 6], (0, 2): ["I", 7], (0, 3): ["I", 8], (0, 4): ["I", 9],
+              (1, 0): ["H", 4], (1, 1): ["H", 5], (1, 2): ["H", 6], (1, 3): ["H", 7], (1, 4): ["H", 8],
+              (1, 5): ["H", 9],
+              (2, 0): ["G", 3], (2, 1): ["G", 4], (2, 2): ["G", 5], (2, 3): ["G", 6], (2, 4): ["G", 7],
+              (2, 5): ["G", 8], (2, 6): ["G", 9],
+              (3, 0): ["F", 2], (3, 1): ["F", 3], (3, 2): ["F", 4], (3, 3): ["F", 5], (3, 4): ["F", 6],
+              (3, 5): ["F", 7], (3, 6): ["F", 8], (3, 7): ["F", 9],
+              (4, 0): ["E", 1], (4, 1): ["E", 2], (4, 2): ["E", 3], (4, 3): ["E", 4], (4, 4): ["E", 5],
+              (4, 5): ["E", 6], (4, 6): ["E", 7], (4, 7): ["E", 8], (4, 8): ["E", 9],
+              (5, 0): ["D", 1], (5, 1): ["D", 2], (5, 2): ["D", 3], (5, 3): ["D", 4], (5, 4): ["D", 5],
+              (5, 5): ["D", 6], (5, 6): ["D", 7], (5, 8): ["D", 8],
+              (6, 0): ["C", 1], (6, 1): ["C", 2], (6, 2): ["C", 3], (6, 3): ["C", 4], (6, 4): ["C", 5],
+              (6, 5): ["C", 6], (6, 6): ["C", 7],
+              (7, 0): ["B", 1], (7, 1): ["B", 2], (7, 2): ["B", 3], (7, 3): ["B", 4], (7, 4): ["B", 5],
+              (7, 5): ["B", 6],
+              (8, 0): ["A", 1], (8, 1): ["A", 2], (8, 2): ["A", 3], (8, 3): ["A", 4], (8, 4): ["A", 5]}
 
 
 def get_input(file_name):
-    # open the file
     file = open(file_name, "r")
-    # get color of user
     player_color = file.readline()
-    # set the color to the code
-    # White: 1
-    # Black: 2
-    player_color = 1 if player_color[0] == 'w' else 2
-    # read in the marble locations
+    print(player_color)
     locations = file.readline().split(',')
-    # start with an empty board
+
     location_matrix = constant.EMPTY_BOARD
 
-    # store opponent and user location separately
-    opp_location = []
-    user_location = []
-
-    # update the empty board with the read in data
     for value in locations:
         row = constant.LOCATION_DICT[value[0]]
         col = int(value[1]) - constant.LETTER_AND_NUM_OFFSET[row][1]
-        location_matrix[row][col] = 1 if value[2] == 'w' else 2
-        user_location.append(value[:2]) if value[2] == 'w' else opp_location.append(value[:2])
+        color = 1 if value[2] == 'w' else 2
+        location_matrix[row][col] = color
 
-    return location_matrix, player_color, user_location, opp_location
+    return location_matrix, player_color
 
 
 def draw_board(canvas, matrix):
     """
     This draws the Abalone game board with coordinates listed on each location
-    :param matrix: matrix representation of abalone board
     :param canvas: the canavas on the GUI to be draw on
     :return: null
     """
@@ -59,598 +73,412 @@ def draw_board(canvas, matrix):
                 '{}'.format(constant.LETTER_AND_NUM_OFFSET[row][0] + str(constant.LETTER_AND_NUM_OFFSET[row][1] + col)),
                 (col * width + 20 + offset, row * width + 15), color="red")
 
-def coordinates_to_notation(row, col):
-    """
-    change matrix row, col to notation used in class
-    :param row: int
-    :param col: int
-    :return: string E.g. "A1"
-    """
-    return str(constant.LETTER_AND_NUM_OFFSET[row][0]) + str(col + constant.LETTER_AND_NUM_OFFSET[row][1])
 
-
-def notation_to_coordinates(s):
-    """
-    change notation used in class to matrix row and col
-    :param s: notation E.g. A5
-    :return: coordinates in tuple (row, col)
-    """
-    return (
-        int(constant.LOCATION_DICT[s[0]]), int(s[1]) - constant.LETTER_AND_NUM_OFFSET[constant.LOCATION_DICT[s[0]]][1])
-
-
-def print_move_detail(moves):
-    """
-    print list of moves based on move notation with coordinate translate to notation used in class
-    :param moves: list of move notation [( move type, [starting coordinates], [end coordinates])]
-    :return:
-    """
-    for i in range(len(moves)):
-        origin = ""
-        dest = ""
-        for coordinate in moves[i][1]:
-            origin += coordinates_to_notation(coordinate[0], coordinate[1]) + " "
-        for coordinate in moves[i][2]:
-            dest += coordinates_to_notation(coordinate[0], coordinate[1]) + " "
-        print(moves[i][0] + ": " + str(origin) + " => " + str(dest))
-
-
-def get_value(s, location_matrix):
-    """
-    Return the value at the given location
-    :param s: The coordinate of the location in stirng E.g. "H4"
-    :param location_matrix: matrix representation of abalone obard
-    :return: the value 1: white, 2: black, 0: empty
-    """
-    row = int(constant.LOCATION_DICT[s[0]])
-    col = int(s[1]) - constant.LETTER_AND_NUM_OFFSET[constant.LOCATION_DICT[s[0]]][1]
-    return location_matrix[row][col]
-
-def get_marble_with_direction(adj_lst, marble, direction):
-    """
-    get marble from the specified location
-    :param adj_lst: the list of marble adjacents
-    :param marble: the marble to go from
-    :param direction: 1,3,5,7,9 or 11
-    :return: the coordinate of marble e.g. I5 with direction = 5 will return H5
-    """
-    for m in adj_lst[marble]:
-        if m[1] == direction:
-            adj_marble = m
-            return adj_marble[0]
-
-
-def get_all_locations(row, col, m, n):
-    """
-    return list of neighbor coordinates
-    E.g. I5 will return [I6,H5,H4]
-    :param row: int of the row that marble you wanna get its neighbor for
-    :param col: int of the col that marble you wanna get its neighbor for
-    :param m: N/A
-    :param n: lenght of each row
-    :return: a  list all location and it's neighbor
-    """
-    adjacent_lst = []
-    if row == 4 and col == 0:
-        adjacent_lst.append((coordinates_to_notation(row - 1, col), 1))
-        adjacent_lst.append((coordinates_to_notation(row, col + 1), 3))
-        adjacent_lst.append((coordinates_to_notation(row + 1, col), 5))
-
-    # when on edge (E.g. E9)
-    if row == 4 and col == 8:
-        adjacent_lst.append((coordinates_to_notation(row - 1, col - 1), 11))
-        adjacent_lst.append((coordinates_to_notation(row + 1, col - 1), 7))
-        adjacent_lst.append((coordinates_to_notation(row, col - 1), 9))
-
-    # when on corner (E.g. I5)
-    if row == 0 and col == 0:
-        adjacent_lst.append((coordinates_to_notation(row + 1, col + 1), 5))
-        adjacent_lst.append((coordinates_to_notation(row, col + 1), 3))
-        adjacent_lst.append((coordinates_to_notation(row + 1, col), 7))
-
-    # when on corner (E.g. I9)
-    if row == 0 and col == 4:
-        adjacent_lst.append((coordinates_to_notation(row + 1, col + 1), 5))
-        adjacent_lst.append((coordinates_to_notation(row, col - 1), 9))
-        adjacent_lst.append((coordinates_to_notation(row + 1, col), 7))
-
-    # when on corner (E.g. A1)
-    if row == 8 and col == 0:
-        adjacent_lst.append((coordinates_to_notation(row - 1, col + 11), 1))
-        adjacent_lst.append((coordinates_to_notation(row - 1, col), 11))
-        adjacent_lst.append((coordinates_to_notation(row, col + 1), 3))
-    # when on corner (E.g. A5)
-    if row == 8 and col == 4:
-        adjacent_lst.append((coordinates_to_notation(row - 1, col), 11))
-        adjacent_lst.append((coordinates_to_notation(row - 1, col + 1), 1))
-        adjacent_lst.append((coordinates_to_notation(row, col - 1), 9))
-
-    # when on edge (E.g. D2, C1, B1)
-    if 4 < row < 8 and col == 0:
-        adjacent_lst.append((coordinates_to_notation(row - 1, col), 11))
-        adjacent_lst.append((coordinates_to_notation(row - 1, col + 1), 1))
-        adjacent_lst.append((coordinates_to_notation(row, col + 1), 3))
-        adjacent_lst.append((coordinates_to_notation(row + 1, col), 5))
-
-    # when on edge (E.g. B6, C7, D8)
-    if 4 < row < 8 and col == n - 1:
-        adjacent_lst.append((coordinates_to_notation(row - 1, col), 11))
-        adjacent_lst.append((coordinates_to_notation(row + 1, col - 1), 7))
-        adjacent_lst.append((coordinates_to_notation(row, col - 1), 9))
-        adjacent_lst.append((coordinates_to_notation(row - 1, col + 1), 1))
-
-    # when on edge (E.g. H4, G3, F2)
-    if 4 > row > 0 and col == 0:
-        adjacent_lst.append((coordinates_to_notation(row + 1, col), 7))
-        adjacent_lst.append((coordinates_to_notation(row + 1, col + 1), 5))
-        adjacent_lst.append((coordinates_to_notation(row, col + 1), 3))
-        adjacent_lst.append((coordinates_to_notation(row - 1, col), 1))
-
-    # when on edge (E.g. G9, F9, H9)
-    if 4 > row > 0 and col == n - 1:
-        adjacent_lst.append((coordinates_to_notation(row - 1, col - 1), 11))
-        adjacent_lst.append((coordinates_to_notation(row, col - 1), 9))
-        adjacent_lst.append((coordinates_to_notation(row + 1, col + 1), 5))
-        adjacent_lst.append((coordinates_to_notation(row + 1, col), 7))
-
-    # when on edge (E.g. I6, I7, I8)
-    if row == 0 and n - 1 > col > 0:
-        adjacent_lst.append((coordinates_to_notation(row, col - 1), 9))
-        adjacent_lst.append((coordinates_to_notation(row, col + 1), 3))
-        adjacent_lst.append((coordinates_to_notation(row + 1, col + 1), 5))
-        adjacent_lst.append((coordinates_to_notation(row + 1, col), 7))
-
-    # when on edge (E.g. A2, A3, A4)
-    if row == 8 and n - 1 > col > 0:
-        adjacent_lst.append((coordinates_to_notation(row, col - 1), 9))
-        adjacent_lst.append((coordinates_to_notation(row, col + 1), 3))
-        adjacent_lst.append((coordinates_to_notation(row - 1, col + 1), 1))
-        adjacent_lst.append((coordinates_to_notation(row - 1, col), 11))
-
-    # when it is in the middle of the abalone board above row 4
-    if 0 < row < 4 and 0 < col < n - 1:
-        adjacent_lst.append((coordinates_to_notation(row - 1, col), 1))
-        adjacent_lst.append((coordinates_to_notation(row - 1, col - 1), 11))
-        adjacent_lst.append((coordinates_to_notation(row + 1, col), 7))
-        adjacent_lst.append((coordinates_to_notation(row, col - 1), 9))
-        adjacent_lst.append((coordinates_to_notation(row + 1, col + 1), 5))
-        adjacent_lst.append((coordinates_to_notation(row, col + 1), 3))
-    if 4 <= row < 8 and 0 < col < n - 1:
-        adjacent_lst.append((coordinates_to_notation(row - 1, col), 1))
-        adjacent_lst.append((coordinates_to_notation(row - 1, col - 1), 11))
-        adjacent_lst.append((coordinates_to_notation(row + 1, col), 5))
-        adjacent_lst.append((coordinates_to_notation(row, col - 1), 9))
-        adjacent_lst.append((coordinates_to_notation(row + 1, col - 1), 7))
-        adjacent_lst.append((coordinates_to_notation(row, col + 1), 3))
-
-    return adjacent_lst
-
-def generate_move_notation(raw_move_notation, adj_lst):
-    """
-    From a list of raw move notations generate the move notations
-    E.g.
-    raw_move_notation = [move_type, marble, number of marble to move, direction, push or not]
-    :param raw_move_notation: [move_type, marble, number of marble to move, direction, push or not]
-    :param adj_lst: the dictionary of adjacent values
-    :return: [move_type, [list of origin location], [list of dest location]]
-    """
-    moves = []
-
-    for move in range(len(raw_move_notation)):
-        m = []
-        m.append(raw_move_notation[move][0])
-
-        direction = raw_move_notation[move][3]
-        if int(raw_move_notation[move][2]) == 1:
-            row = notation_to_coordinates(raw_move_notation[move][1])[0]
-            col = notation_to_coordinates(raw_move_notation[move][1])[1]
-            m.append([(row, col)])
-            dest = get_marble_with_direction(adj_lst, raw_move_notation[move][1], direction)
-            dest_row = notation_to_coordinates(dest)[0]
-            dest_col = notation_to_coordinates(dest)[1]
-            m.append([(dest_row, dest_col)])
-
-        elif int(raw_move_notation[move][2]) == 2:
-            row = notation_to_coordinates(raw_move_notation[move][1])[0]
-            col = notation_to_coordinates(raw_move_notation[move][1])[1]
-            second_marble = get_marble_with_direction(adj_lst, raw_move_notation[move][1], direction)
-            second_row, second_col = notation_to_coordinates(second_marble)
-            m.append([(row, col), (second_row, second_col)])
-            dest_marble = get_marble_with_direction(adj_lst,second_marble, direction)
-            dest_marble2 = get_marble_with_direction(adj_lst, dest_marble, direction)
-            dest_marble_row, dest_marble_col = notation_to_coordinates(dest_marble)
-            dest_marble2_row, dest_marble2_col = notation_to_coordinates(dest_marble2)
-            m.append([(dest_marble_row, dest_marble_col), (dest_marble2_row, dest_marble2_col)])
-        elif int(raw_move_notation[move][2]) == 3:
-            row = notation_to_coordinates(raw_move_notation[move][1])[0]
-            col = notation_to_coordinates(raw_move_notation[move][1])[1]
-            second_marble = get_marble_with_direction(adj_lst, raw_move_notation[move][1], direction)
-            second_row, second_col = notation_to_coordinates(second_marble)
-            third_marble = get_marble_with_direction(adj_lst,second_marble, direction)
-            third_row, third_col = notation_to_coordinates(third_marble)
-            m.append([(row, col), (second_row, second_col), (third_row, third_col)])
-            dest_marble = get_marble_with_direction(adj_lst, second_marble, direction)
-            dest_marble2 = get_marble_with_direction(adj_lst, dest_marble, direction)
-            dest_marble3 = get_marble_with_direction(adj_lst, dest_marble2, direction)
-            dest_marble_row, dest_marble_col = notation_to_coordinates(dest_marble)
-            dest_marble2_row, dest_marble2_col = notation_to_coordinates(dest_marble2)
-            dest_marble3_row, dest_marble3_col = notation_to_coordinates(dest_marble3)
-
-            m.append([(dest_marble_row, dest_marble_col), (dest_marble2_row, dest_marble2_col), (dest_marble3_row, dest_marble3_col)])
-
-        moves.append(m)
-    return moves
-
-def generate_inline(location_matrix, adjacent_marble, adj_lst, direction, color, user_lst, opp_lst, count_user,
-                    count_opp):
-
-    if count_user > 3 or adjacent_marble is None:
-        return
-    row = notation_to_coordinates(adjacent_marble)[0]
-    col = notation_to_coordinates(adjacent_marble)[1]
-
-    if location_matrix[row][col] == 0:
-        if count_user > count_opp and count_user == 1:
-            return count_user, direction, 'I'
-        elif count_user > count_opp and count_user > 1 and count_opp > 0:
-            return count_user, direction, 'P'
-        elif count_user > count_opp:
-            return count_user, direction, 'I'
-
-    elif adjacent_marble in opp_lst:
-        adj_marble = get_marble_with_direction(adj_lst, adjacent_marble, direction)
-        return generate_inline(location_matrix, adj_marble, adj_lst, direction, color, user_lst, opp_lst, count_user,
-                               count_opp + 1)
-
-    elif adjacent_marble in user_lst:
-
-        adj_marble = get_marble_with_direction(adj_lst, adjacent_marble, direction)
-        return generate_inline(location_matrix, adj_marble, adj_lst, direction, color,
-                               user_lst, opp_lst,
-                               count_user + 1, count_opp)
-
-
-
-def generate_side_step_three_marbles(location_matrix, color):
-    moves = []  # (move type, [start locations], [end locations])
-    move = "SS"
-
-    # TODO: generate diagonal three marbles NW/SE
-
-    # TODO: generate diagonal three marbles NE/SW
-    row = 0
-    while row < len(location_matrix):
-        col = 0
-        while col < len(location_matrix[row]):
-            first_marble_location = (row, col)
-            if row == 8 or row == 7:
-                # dont need to do anything since it would've been generated in Row C
-                col += 1
-            elif col == len(location_matrix[row]) - 1 and row == 4:
-                if location_matrix[row][col] == color and location_matrix[row + 1][col-1] == color and location_matrix[row + 2][col-2] == color:
-                    origin = [first_marble_location, (row + 1, col-1), (row + 2, col-2)]
-                    if location_matrix[row][col-1] == 0 and location_matrix[row + 1][col - 2] == 0 and location_matrix[row + 2][col - 3] == 0:
-                        moves.append([move, origin, [(row, col - 1), (row + 1, col - 2), (row + 2, col - 3)]])
-                col += 1
-            elif location_matrix[row][col] == color and location_matrix[row + 1][col - 1] == color and \
-                    location_matrix[row + 2][col - 2] == color:
-                origin = [first_marble_location, (row + 1, col - 1), (row + 2, col - 2)]
-                if 4 < row < 7:
-                    if col == len(location_matrix[row]) -1 and location_matrix[row - 1][col] == 0 and location_matrix[row][col - 1] == 0 and \
-                            location_matrix[row + 1][col - 2] == 0:
-                        print("a")
-                    if (col == 3 and row == 6) or (col < 4 and row == 5) and location_matrix[row][col + 1] == 0 and location_matrix[row + 1][col + 1] == 0 and \
-                            location_matrix[row + 2][col + 2] == 0 :
-                        moves.append([move, origin, [(row, col + 1), (row + 1, col), (row + 2, col-1)]])
-                    if col != len(location_matrix[row]) -1 and row < 6 and location_matrix[row + 1][col] == 0 and location_matrix[row + 2][col - 1] == 0 and \
-                            location_matrix[row + 3][col - 2] == 0 :
-                        moves.append([move, origin, [(row + 1, col), (row + 2, col - 1), (row + 3, col - 2)]])
-                    if location_matrix[row - 1][col] == 0 and location_matrix[row][col - 1] == 0 and \
-                            location_matrix[row + 1][col - 2] == 0 and col > 0:
-                        moves.append([move, origin, [(row - 1, col), (row, col - 1), (row + 1, col - 2)]])
-                    if location_matrix[row][col-1] == 0 and location_matrix[row][col - 2] == 0 and \
-                            location_matrix[row + 1][col - 2] == 0 and col > 0:
-                        moves.append([move, origin, [(row, col-1), (row +1 , col - 2), (row + 2, col - 3)]])
-                    if col != len(location_matrix[row]) -1 and location_matrix[row][col+1] == 0 and location_matrix[row+1][col] == 0 and \
-                            location_matrix[row + 2][col - 1] == 0 and col > 0 and col >=4:
-                        moves.append([move, origin, [(row, col+1), (row +1 , col), (row + 2, col - 1)]])
-                    col += 1
-
-                elif row == 4:
-                    pass
-
-            elif 0 <= row < 4 and location_matrix[row][col] == color and location_matrix[row +1][col] == color and location_matrix[row+2][
-                col] == color:
-
-                origin = [first_marble_location, (row + 1 , col), (row + 2, col)]
-                if col == len(location_matrix[row]) -1:
-                    if location_matrix[row+1][col+1] == 0 and location_matrix[row+2][col+1] == 0 and location_matrix[row+3][col+1] == 0:
-                        moves.append([move, origin, [(row+1, col + 1), (row + 2, col+1), (row + 3, col + 1)]])
-                    if location_matrix[row-1][col-1] == 0 and location_matrix[row][col-1] == 0 and location_matrix[row+1][col-1] == 0 and row > 0 and row <4:
-                        moves.append([move, origin, [(row-1, col - 1), (row, col-1), (row + 1, col-1)]])
-                    col += 1
-                elif row == 0:
-                    if location_matrix[row][col+1] == 0 and location_matrix[row+1][col+1] == 0 and location_matrix[row+2][col+1] == 0:
-                        moves.append([move, origin, [(row, col + 1), (row + 1, col + 1), (row + 2, col + 1)]])
-                    if location_matrix[row][col-1] == 0 and location_matrix[row+1][col-1] == 0 and location_matrix[row+2][col-1] == 0 and col > 0:
-                        moves.append([move, origin, [(row, col - 1), (row + 1, col - 1), (row + 2, col - 1)]])
-                    if location_matrix[row+1][col+1] == 0 and location_matrix[row+2][col+1] == 0 and location_matrix[row+3][col+1] == 0:
-                        moves.append([move, origin, [(row + 1 , col + 1), (row + 2, col + 1), (row + 3, col + 1)]])
-                    col+=1
-                elif 0 < row < 4:
-                    if location_matrix[row][col + 1] == 0 and location_matrix[row + 1][col + 1] == 0 and \
-                            location_matrix[row + 2][col + 1] == 0:
-                        moves.append([move, origin, [(row, col + 1), (row + 1, col + 1), (row + 2, col + 1)]])
-                    if location_matrix[row][col - 1] == 0 and location_matrix[row + 1][col - 1] == 0 and \
-                            location_matrix[row + 2][col - 1] == 0 and col > 0:
-                        moves.append([move, origin, [(row, col - 1), (row + 1, col - 1), (row + 2, col - 1)]])
-                    if location_matrix[row-1][col-1] == 0 and location_matrix[row][col - 1] == 0 and \
-                            location_matrix[row + 1][col - 1] == 0 and col > 0:
-                        moves.append([move, origin, [(row -1, col-1), (row, col - 1), (row + 1, col - 1)]])
-                    col += 1
-
-            elif row > 4:
-                col += 1
-            else:
-                col+=1
-        row+=1
-    # This generate moves for horizontal of three marbles
-    # row = 0
-    # while row < len(location_matrix):
-    #     col = 0
-    #     while col < len(location_matrix[row]):
-    #         first_marble_location = (row, col)
-    #         if location_matrix[row][col] == color and location_matrix[row][col + 1] == color and location_matrix[row][
-    #             col + 2] == color:
-    #             origin = [first_marble_location, (row, col + 1), (row, col + 2)]
-    #             if row == 0:
-    #                 if location_matrix[row + 1][col + 2] == 0 and location_matrix[row + 1][col + 1] == 0 and \
-    #                         location_matrix[row + 1][col + 3] == 0:  # SE
-    #                     moves.append((move, origin, [(row + 1, col + 1), (row + 1, col + 2), (row + 1, col + 3)]))
-    #                     # print_move_detail((move, origin, [(row + 1, col + 1), (row + 1, col + 2), (row + 1, col + 3)]))
-    #                 if location_matrix[row + 1][col] == 0 and location_matrix[row + 1][col + 1] == 0 and \
-    #                         location_matrix[row + 1][col + 2] == 0:  # SW
-    #                     moves.append((move, origin, [(row + 1, col), (row + 1, col + 1), (row + 1, col + 2)]))
-    #                     # print_move_detail((move, origin, [(row + 1, col), (row + 1, col + 1), (row + 1, col + 2)]))
-    #                 col += 3
-    #
-    #             if row == 8:
-    #                 if location_matrix[row - 1][col + 1] == 0 and location_matrix[row - 1][col + 2] == 0 and \
-    #                         location_matrix[row - 1][ col + 3] == 0:  # NE
-    #                     moves.append((move, origin, [(row - 1, col + 1), (row - 1, col + 2), (row - 1, col + 3)]))
-    #                     # print_move_detail((move, origin, [(row - 1, col + 1), (row - 1, col + 2), (row - 1, col + 3)]))
-    #                 if location_matrix[row - 1][col] == 0 and location_matrix[row - 1][col + 1] == 0 and \
-    #                         location_matrix[row - 1][col + 2] == 0:  # NW
-    #                     moves.append((move, origin, [(row - 1, col), (row - 1, col + 1), (row - 1, col + 2)]))
-    #                     # print_move_detail((move, origin, [(row - 1, col), (row - 1, col + 1), (row - 1, col + 2)]))
-    #                 col += 3
-    #
-    #             if 0 < row < 4:
-    #                 if col == 0 and location_matrix[row + 1][col] == 0 and location_matrix[row + 1][col + 1] == 0 and \
-    #                         location_matrix[row + 1][col + 2] == 0:  # NW when at edge
-    #                     moves.append((move, origin,[(row + 1, col + 1), (row + 1, col + 2), (row + 1, col + 2)]))
-    #                     # print_move_detail((move, origin, [(row + 1, col), (row + 1, col + 1), (row + 1, col + 2)]))
-    #                 if location_matrix[row + 1][col + 1] == 0 and location_matrix[row + 1][col + 2] == 0 and \
-    #                         location_matrix[row + 1][col + 3] == 0:  # SE
-    #                     moves.append((move, origin, [(row + 1, col + 1), (row + 1, col + 2), (row + 1, col + 3)]))
-    #                     # print_move_detail((move, origin, [(row + 1, col + 1), (row + 1, col + 2), (row + 1, col + 3)]))
-    #                 if col != 0 and location_matrix[row + 1][col] == 0 and location_matrix[row + 1][
-    #                     col + 1] == 0 and location_matrix[row + 1][col + 2] == 0:  # SW
-    #                     moves.append((move, [first_marble_location, (row, col + 1), (row + 1, col + 2)],
-    #                          [(row + 1, col), (row + 1, col + 1), (row + 1, col + 2)]))
-    #                     # print_move_detail((move, origin, [(row + 1, col), (row + 1, col + 1), (row + 1, col + 2)]))
-    #                 if col != 0 and location_matrix[row - 1][col - 1] == 0 and location_matrix[row - 1][
-    #                     col] == 0 and location_matrix[row - 1][col + 1] == 0:  # NE
-    #                     moves.append((move, origin,[(row - 1, col - 1), (row - 1, col), (row - 1, col + 1)]))
-    #                     # print_move_detail((move, origin,[(row - 1, col - 1), (row - 1, col), (row - 1, col + 1)]))
-    #                 if col != len(location_matrix[row]) - 3 and location_matrix[row - 1][col - 1] == 0 and \
-    #                         location_matrix[row - 1][col] == 0 and location_matrix[row - 1][col - 2] == 0:
-    #                     # NW only available in the middle of board
-    #                     moves.append((move, origin, [(row - 1, col), (row - 1, col + 1), (row - 1, col + 2)]))
-    #                     # print_move_detail((move, origin,[(row - 1, col), (row - 1, col + 1), (row - 1, col + 2)]))
-    #                 col += 3
-    #
-    #             if 4 < row < 8:
-    #                 if col == 0 and location_matrix[row - 1][col] == 0 and location_matrix[row - 1][col + 1] == 0 and \
-    #                         location_matrix[row - 1][col + 2] == 0:
-    #                     moves.append((move, origin, [(row - 1, col + 1), (row - 1, col + 2), (row - 1, col + 2)]))
-    #                     # print_move_detail((move, origin, [(row - 1, col), (row - 1, col + 1), (row - 1, col + 2)]))
-    #                 if location_matrix[row - 1][col + 1] == 0 and location_matrix[row - 1][col + 2] == 0 and \
-    #                         location_matrix[row - 1][col + 3] == 0:  # NE
-    #                     moves.append((move, origin, [(row - 1, col + 1), (row - 1, col + 2), (row - 1, col + 3)]))
-    #                     # print_move_detail((move, origin, [(row - 1, col + 1), (row - 1, col + 2), (row - 1, col + 3)]))
-    #                 if col != 0 and location_matrix[row - 1][col] == 0 and location_matrix[row - 1][
-    #                     col + 1] == 0 and location_matrix[row - 1][col + 2] == 0:  # NW
-    #                     moves.append((move, origin, [(row - 1, col), (row - 1, col + 1), (row - 1, col + 2)]))
-    #                     # print_move_detail((move, origin, [(row - 1, col), (row - 1, col + 1), (row - 1, col + 2)]))
-    #                 if col != 0 and location_matrix[row + 1][col - 1] == 0 and location_matrix[row + 1][
-    #                     col] == 0 and location_matrix[row + 1][col + 1] == 0:  # SW
-    #                     moves.append((move, origin, [(row + 1, col - 1), (row + 1, col), (row + 1, col + 1)]))
-    #                     # print_move_detail((move, origin,[(row + 1, col - 1), (row + 1, col), (row + 1, col + 1)]))
-    #                 if col != len(location_matrix[row]) - 3 and location_matrix[row + 1][col] == 0 and \
-    #                         location_matrix[row + 1][col + 1] == 0 and location_matrix[row + 1][col + 2] == 0:
-    #                     # NW only available in the middle of board
-    #                     moves.append((move, origin, [(row + 1, col), (row + 1, col + 1), (row + 1, col + 2)]))
-    #                     # print_move_detail((move, origin, [(row + 1, col), (row + 1, col + 1), (row + 1, col + 2)]))
-    #                 col += 3
-    #             if row == 4:
-    #                 if col != len(location_matrix[row]) - 3 and location_matrix[row - 1][col] == 0 and \
-    #                         location_matrix[row - 1][col + 1] == 0 and location_matrix[row - 1][col + 2] == 0:  # NE
-    #                     moves.append((move, origin, [(row - 1, col), (row - 1, col + 1), (row - 1, col + 2)]))
-    #                     # print_move_detail((move, origin, [(row - 1, col), (row - 1, col + 1), (row - 1, col + 2)]))
-    #                 if col != 0 and location_matrix[row - 1][col - 1] == 0 and location_matrix[row - 1][
-    #                     col] == 0 and location_matrix[row - 1][col + 1] == 0:  # NW
-    #                     moves.append((move, origin, [(row - 1, col - 1), (row - 1, col), (row - 1, col + 1)]))
-    #                     # print_move_detail((move, origin, [(row - 1, col - 1), (row - 1, col), (row - 1, col + 1)]))
-    #                 if col != 0 and location_matrix[row + 1][col - 1] == 0 and location_matrix[row + 1][
-    #                     col] == 0 and location_matrix[row + 1][col + 1] == 0:  # SW
-    #                     moves.append((move, origin, [(row + 1, col - 1), (row + 1, col), (row + 1, col + 1)]))
-    #                     # print_move_detail((move, origin, [(row + 1, col - 1), (row + 1, col), (row + 1, col + 1)]))
-    #                 if col != len(location_matrix[row]) - 3 and location_matrix[row + 1][col] == 0 and \
-    #                         location_matrix[row + 1][col + 1] == 0 and location_matrix[row + 1][col + 2] == 0:  # SE
-    #                     moves.append((move, origin, [(row + 1, col), (row + 1, col + 1), (row + 1, col + 2)]))
-    #                     # print_move_detail((move, origin, [(row + 1, col), (row + 1, col + 1), (row + 1, col + 2)]))
-    #                 col += 3
-    #         else:
-    #             col += 1
-    #     row += 1
-    print_move_detail(moves)
-    return moves
-
-
-def generate_side_step_two_marbles(location_matrix, color):
-    moves = []  # (move type, [start locations], [end locations])
-    move = "SS"
-
-    # TODO: generate diagonal two marbles NW/SW
-
-    # TODO: generate diagonal two marbles NE/SW
-
-    # This generate moves for horizontal of two marbles
-    row = 0
-    while row < len(location_matrix):
-        col = 0
-        while col < len(location_matrix[row]) -1:
-            first_marble_location = (row, col)
-
-            # if col == len(location_matrix[row]) - 1:
-            #     col += 1
-            if location_matrix[row][col] == color and location_matrix[row][col + 1] == color:
-
-                origin = [first_marble_location, (row, col + 1)]
-                if row == 0:
-                    if location_matrix[row + 1][col + 2] == 0 and location_matrix[row + 1][col + 1] == 0:  # SE
-                        moves.append((move, origin, [(row + 1, col + 1), (row + 1, col + 2)]))
-                    if location_matrix[row + 1][col] == 0 and location_matrix[row + 1][col + 1] == 0:  # SW
-                        moves.append((move, origin, [(row + 1, col), (row + 1, col + 1)]))
-                    col += 2
-
-                if row == 8:
-                    if location_matrix[row - 1][col + 1] == 0 and location_matrix[row - 1][col + 2] == 0:  # NE
-                        moves.append((move, origin, [(row - 1, col + 1), (row - 1, col + 2)]))
-                    if location_matrix[row - 1][col] == 0 and location_matrix[row - 1][col + 1] == 0:  # NW
-                        moves.append((move, origin, [(row - 1, col), (row - 1, col + 1)]))
-                    col += 2
-
-                if 0 < row < 4:
-                    if col == 0 and location_matrix[row + 1][col] == 0 and location_matrix[row + 1][col + 1] == 0:
-                        moves.append(
-                            (move, origin, [(row + 1, col), (row + 1, col + 1)]))
-                        # print(coordinates_to_notation(row + 1, col), coordinates_to_notation(row + 1, col + 1))
-                    if location_matrix[row + 1][col + 1] == 0 and location_matrix[row + 1][col + 2] == 0:  # SE
-                        moves.append((move, origin, [(row + 1, col + 1), (row + 1, col + 2)]))
-                        # print(coordinates_to_notation(row + 1, col + 1), coordinates_to_notation(row + 1, col + 2))
-                    if not col == 0 and location_matrix[row + 1][col] == 0 and location_matrix[row + 1][
-                        col + 1] == 0:  # SW
-                        moves.append((move, origin, [(row + 1, col), (row + 1, col + 1)]))
-                        # print(coordinates_to_notation(row + 1, col), coordinates_to_notation(row + 1, col + 1))
-                    if not col == 0 and location_matrix[row - 1][col - 1] == 0 and location_matrix[row - 1][
-                        col] == 0:  # NE
-                        moves.append((move, origin, [(row - 1, col - 1), (row - 1, col)]))
-                        # print(coordinates_to_notation(row - 1, col - 1), coordinates_to_notation(row - 1, col))
-                    if not col == len(location_matrix[row]) - 2 and location_matrix[row - 1][col - 1] == 0 and \
-                            location_matrix[row - 1][col] == 0:  # NW only available in the middle of board
-                        moves.append((move, origin, [(row - 1, col), (row - 1, col + 1)]))
-                        # print(coordinates_to_notation(row - 1, col), coordinates_to_notation(row - 1, col + 1))
-                    col += 2
-                if 4 < row < 8:
-                    if location_matrix[row - 1][col + 1] == 0 and location_matrix[row - 1][col + 2] == 0:  # NE
-                        moves.append(
-                            (move, origin, [(row - 1, col + 1), (row - 1, col + 2)]))
-                        # print(coordinates_to_notation(row - 1, col + 1), coordinates_to_notation(row - 1, col + 2))
-                    if not col == 0 and location_matrix[row - 1][col] == 0 and location_matrix[row - 1][
-                        col + 1] == 0:  # NW
-                        moves.append((move, origin, [(row - 1, col), (row - 1, col + 1)]))
-                        # print(coordinates_to_notation(row - 1, col), coordinates_to_notation(row - 1, col + 1))
-                    if not col == 0 and location_matrix[row + 1][col - 1] == 0 and location_matrix[row + 1][
-                        col] == 0:  # SW
-                        moves.append((move, origin, [(row + 1, col - 1), (row + 1, col)]))
-                        # print(coordinates_to_notation(row + 1, col - 1), coordinates_to_notation(row + 1, col))
-                    if not col == len(location_matrix[row]) - 2 and location_matrix[row + 1][col] == 0 and \
-                            location_matrix[row + 1][col + 1] == 0:  # NW only available in the middle of board
-                        moves.append((move, origin, [(row + 1, col), (row + 1, col + 1)]))
-                        # print(coordinates_to_notation(row + 1, col), coordinates_to_notation(row + 1, col + 1))
-                    col += 2
-                if row == 4:
-                    if not col == len(location_matrix[row]) - 2 and location_matrix[row - 1][col] == 0 and \
-                            location_matrix[row - 1][col + 1] == 0:  # NE
-                        moves.append((move, origin, [(row - 1, col), (row - 1, col + 1)]))
-                        # print(coordinates_to_notation(row - 1, col), coordinates_to_notation(row - 1, col + 1))
-                    if not col == 0 and location_matrix[row - 1][col - 1] == 0 and location_matrix[row - 1][col] == 0:
-                        # NW
-                        moves.append((move, origin, [(row - 1, col - 1), (row - 1, col)]))
-                        # print(coordinates_to_notation(row - 1, col - 1), coordinates_to_notation(row - 1, col))
-                    if not col == 0 and location_matrix[row + 1][col - 1] == 0 and location_matrix[row + 1][col] == 0:
-                        # SW
-                        moves.append((move, origin, [(row + 1, col - 1), (row + 1, col)]))
-                        # print(coordinates_to_notation(row + 1, col - 1), coordinates_to_notation(row + 1, col))
-                    if not col == len(location_matrix[row]) - 2 and location_matrix[row + 1][col] == 0 and \
-                            location_matrix[row + 1][col + 1] == 0:  # SE
-                        moves.append((move, origin, [(row + 1, col), (row + 1, col + 2)]))
-                        # print(coordinates_to_notation(row + 1, col), coordinates_to_notation(row + 1, col + 1))
-                    col += 2
-            else:
-                col += 1
-        row += 1
-
-    print_move_detail(moves)
-    return moves
-
-
-
-def generate_new_board(location_matrix, moves):
-    # generate new board based on provided moves
-    pass
-
-
-def generate_move(location_matrix, color, user_lst, opp_lst):
-    loc = {}
-    raw_move_notation = []
-
-    for row in range(len(location_matrix)):
-        for col in range(len(location_matrix[row])):
-            loc[coordinates_to_notation(row, col)] = get_all_locations(row, col, len(location_matrix),
-                                                                       len(location_matrix[row]))
-    for key in loc.keys():
-        for value in loc[key]:
-            row = notation_to_coordinates(value[0])[0]
-            col = notation_to_coordinates(value[0])[1]
-            key_row = notation_to_coordinates(key)[0]
-            key_col = notation_to_coordinates(key)[1]
-            if location_matrix[key_row][key_col] == color or location_matrix[row][col] == 0 and location_matrix[row][
-                col] == color:
-                direction = generate_inline(location_matrix, value[0], loc, value[1], color, user_lst, opp_lst, 1, 0)
-                if direction is not None:
-                    raw_move_notation.append(["I", key, direction[0], direction[1], direction[2]])
-    moves = generate_move_notation(raw_move_notation, loc)
-    print(moves)
-
-    # generate ss two marbles
-    # Need to find two clusters
-    # m = generate_side_step_two_marbles(location_matrix, color)
-    # for n in m:
-    #     moves.append(n)
-    # print(moves)
-    # print(len(moves))
-
-    # generate ss three marbles
-    m = generate_side_step_three_marbles(location_matrix, color)
-    # for n in m:
-    #     moves.append(n)
-    # print(moves)
-    # print(len(moves))
-
-    # TODO: after all moves generated pass into make board
-    pass
-
-def show_grid(location_matrix):
+def show_grid(location_matrix, ):
     graph_element = sg.Graph((600, 600), (0, 300), (300, 0), key='graph')
     window = sg.Window('Abalone', [[graph_element]], font=('arial', 15)).Finalize()
-    canvas = window['graph']
-    draw_board(canvas, location_matrix)
-
+    draw_board(graph_element, location_matrix)
     event, values = window.read()
 
-location_matrix, color, user_lst, opp_lst = get_input("Test3.input")
-generate_move(location_matrix, color, user_lst, opp_lst)
-show_grid(location_matrix)
+
+def generate_moves(matrix, player_color):
+    inline_ply_moves, inline_opp_moves = generate_inline(player_color, matrix)
+    sidestep_ply_moves = generate_sidestep(player_color, matrix)
+
+    return {'inline_ply_moves': inline_ply_moves,
+            'sidestep_ply_moves': sidestep_ply_moves,
+            'inline_opp_moves': inline_opp_moves}
+
+
+def generate_inline(color, location_matrix):
+    """
+    Generates inline moves (for 1, 2, or 3 marbles).
+    :return:
+    """
+    player = 1 if color[0] == 'w' else 2
+    locations = [(ix, iy) for ix, row in enumerate(location_matrix) for iy, i in enumerate(row) if i == player]
+    opp_loc = [(ix, iy) for ix, row in enumerate(location_matrix) for iy, i in enumerate(row) if i != player and i != 0]
+
+    move_notation = []
+    opp_move_notation = []
+
+    directions = [move_1, move_3, move_5, move_7, move_9, move_11]
+
+    # for 1 marble moving inline
+    for move in directions:
+        for x, y in locations:
+            old_position = [coord_dict[(x, y)][0] + str(coord_dict[(x, y)][1])]
+            new_points = move(x, y)
+            if new_points not in locations and new_points != (-1, -1) and check_if_legal(new_points[0], new_points[1]) \
+                    and new_points not in opp_loc:
+                new_position = [coord_dict[new_points][0] + str(coord_dict[new_points][1])]
+                move_notation.append(("I", old_position, new_position))
+
+    # For 2 marbles, if opp only has 1 in line, can move that marble
+    # check if there are two marbles in player's hand
+    for move in directions:
+
+        for x, y in locations:
+            chain = get_chain(move, (x, y), 2, locations)
+            opp_chain = get_opp_chain(move, (x, y), opp_loc)
+
+            if len(chain) > len(opp_chain) and len(chain) > 1:
+                new_points = move(chain[0][0], chain[0][1])
+
+                new_position = []
+                new_opp_position = []
+                old_position = []
+                old_opp_pos = []
+
+                if new_points not in locations and new_points != (-1, -1) and check_if_legal(new_points[0],
+                                                                                             new_points[1]):
+                    pp = move(chain[0][0], chain[0][1])
+
+                    if pp in opp_chain:
+
+                        # check if pushing against opposite color
+                        for i in opp_chain:
+                            new_opp_coord = move(i[0], i[1])
+
+                            old_opp_pos.append(coord_dict[i][0] + str(coord_dict[i][1]))
+                            if new_opp_coord == (-1, -1):
+                                pass
+                            else:
+                                new_opp_position.append(
+                                    coord_dict[new_opp_coord][0] + str(coord_dict[new_opp_coord][1]))
+                        opp_move_notation.append(("I", old_opp_pos, new_opp_position))
+
+                    for i in chain:
+                        new_points = move(i[0], i[1])
+
+                        old_position.append(coord_dict[i][0] + str(coord_dict[i][1]))
+
+                        new_position.append(coord_dict[new_points][0] + str(coord_dict[new_points][1]))
+                    move_notation.append(("I", old_position, new_position))
+
+    # For 3 marbles, if opp has 2 or less in line, can move that line
+    # check if there are 3 marbles in player's hand
+    for move in directions:
+
+        for x, y in locations:
+
+            chain = get_chain(move, (x, y), 3, locations)
+            opp_chain = get_opp_chain(move, (x, y), opp_loc)
+
+            if len(chain) > len(opp_chain) and len(chain) > 2:
+                new_points = move(chain[0][0], chain[0][1])
+
+                new_position = []
+                new_opp_position = []
+                old_position = []
+                old_opp_pos = []
+
+                if new_points not in locations and new_points != (-1, -1) and check_if_legal(new_points[0],
+                                                                                             new_points[1]):
+                    pp = move(chain[0][0], chain[0][1])
+
+                    if pp in opp_chain:
+
+                        # check if pushing against opposite color
+                        for i in opp_chain:
+                            new_opp_coord = move(i[0], i[1])
+
+                            old_opp_pos.append(coord_dict[i][0] + str(coord_dict[i][1]))
+                            if new_opp_coord == (-1, -1):
+                                pass
+                            else:
+                                new_opp_position.append(
+                                    coord_dict[new_opp_coord][0] + str(coord_dict[new_opp_coord][1]))
+                        opp_move_notation.append(("I", old_opp_pos, new_opp_position))
+
+                    for i in chain:
+                        new_points = move(i[0], i[1])
+
+                        old_position.append(coord_dict[i][0] + str(coord_dict[i][1]))
+
+                        new_position.append(coord_dict[new_points][0] + str(coord_dict[new_points][1]))
+                    move_notation.append(("I", old_position, new_position))
+
+    return move_notation, opp_move_notation
+
+
+def generate_sidestep(color, location_matrix):
+    """
+    Generate sidestep notations.
+    :param color:
+    :param location_matrix:
+    :return:
+    """
+    player = 1 if color[0] == 'w' else 2
+
+    locations = [(ix, iy) for ix, row in enumerate(location_matrix) for iy, i in enumerate(row) if i == player]
+    opp_loc = [(ix, iy) for ix, row in enumerate(location_matrix) for iy, i in enumerate(row) if i != player and i != 0]
+
+    move_notation = []
+
+    directions = [move_1, move_3, move_5, move_7, move_9, move_11]
+
+    # for chains of 2
+    for move in directions:
+        for x, y in locations:
+            if move == move_1 or move == move_7:
+                chains = [get_left_diag, get_line]
+            elif move == move_3 or move == move_9:
+                chains = [get_left_diag, get_right_diag]
+            elif move == move_5 or move == move_11:
+                chains = [get_right_diag, get_line]
+
+            for get_chain in chains:
+                chain = get_chain((x, y), 2, locations)
+
+                new_chains = []
+                old_moves = []
+                if len(chain) > 1:
+                    first_move = move(chain[0][0], chain[0][1])
+                    second_move = move(chain[1][0], chain[1][1])
+                    if (-1, -1) not in [first_move, second_move] and first_move not in locations \
+                            and second_move not in locations and first_move not in opp_loc \
+                            and second_move not in opp_loc:
+                        old_moves.append(coord_dict[chain[0]][0] + str(coord_dict[chain[0]][1]))
+                        old_moves.append(coord_dict[chain[1]][0] + str(coord_dict[chain[1]][1]))
+                        new_chains.append(coord_dict[first_move][0] + str(coord_dict[first_move][1]))
+                        new_chains.append(coord_dict[second_move][0] + str(coord_dict[second_move][1]))
+                        move_notation.append(("SS", old_moves, new_chains))
+    # for chains of 3
+    for move in directions:
+        for x, y in locations:
+            if move == move_1 or move == move_7:
+                chains = [get_left_diag, get_line]
+            elif move == move_3 or move == move_9:
+                chains = [get_left_diag, get_right_diag]
+            elif move == move_5 or move == move_11:
+                chains = [get_right_diag, get_line]
+
+            for get_chain in chains:
+                chain = get_chain((x, y), 3, locations)
+
+                new_chains = []
+                old_moves = []
+                if len(chain) > 2:
+                    first_move = move(chain[0][0], chain[0][1])
+                    second_move = move(chain[1][0], chain[1][1])
+                    if (-1, -1) not in [first_move, second_move] and first_move not in locations \
+                            and second_move not in locations and first_move not in opp_loc \
+                            and second_move not in opp_loc:
+                        old_moves.append(coord_dict[chain[0]][0] + str(coord_dict[chain[0]][1]))
+                        old_moves.append(coord_dict[chain[1]][0] + str(coord_dict[chain[1]][1]))
+                        new_chains.append(coord_dict[first_move][0] + str(coord_dict[first_move][1]))
+                        new_chains.append(coord_dict[second_move][0] + str(coord_dict[second_move][1]))
+                        move_notation.append(("SS", old_moves, new_chains))
+    return move_notation
+
+
+def get_left_diag(current_coord, num_marbles, location_matrix):
+    """
+    Finds chains of 2 or 3 according to which side-step they're moving.
+    :param current_coord:
+    :param num_marbles:
+    :param location_matrix:
+    :return:
+    """
+    chain = [current_coord]
+
+    for i in range(num_marbles - 1):
+        current_coord = move_5(current_coord[0], current_coord[1])
+        if current_coord in location_matrix:
+            chain.append(current_coord)
+    return chain
+
+
+def get_right_diag(current_coord, num_marbles, location_matrix):
+    """
+    Finds chains of 2 or 3 according to which side-step they're moving.
+    :param current_coord:
+    :param num_marbles:
+    :param location_matrix:
+    :return:
+    """
+    chain = [current_coord]
+
+    for i in range(num_marbles - 1):
+        current_coord = move_7(current_coord[0], current_coord[1])
+        if current_coord in location_matrix:
+            chain.append(current_coord)
+    return chain
+
+
+def get_line(current_coord, num_marbles, location_matrix):
+    chain = [current_coord]
+    for i in range(num_marbles - 1):
+        current_coord = move_3(current_coord[0], current_coord[1])
+        if current_coord in location_matrix:
+            chain.append(current_coord)
+    return chain
+
+
+def get_chain(move, current_coord, num_marbles, location_matrix):
+    """
+    Finds chains of 2 or 3 according to which direction they are being pushed for current player.
+    :param move_type:
+    :param current_coord:
+    :return:
+    """
+    chain = [current_coord]
+
+    if move == move_1:
+        for i in range(num_marbles - 1):
+            current_coord = move_7(current_coord[0], current_coord[1])
+            if current_coord in location_matrix:
+                chain.append(current_coord)
+    elif move == move_3:
+        for i in range(num_marbles - 1):
+            current_coord = move_9(current_coord[0], current_coord[1])
+            if current_coord in location_matrix:
+                chain.append(current_coord)
+    elif move == move_5:
+        for i in range(num_marbles - 1):
+            current_coord = move_11(current_coord[0], current_coord[1])
+            if current_coord in location_matrix:
+                chain.append(current_coord)
+    elif move == move_7:
+        for i in range(num_marbles - 1):
+            current_coord = move_1(current_coord[0], current_coord[1])
+            if current_coord in location_matrix:
+                chain.append(current_coord)
+    elif move == move_9:
+        for i in range(num_marbles - 1):
+            current_coord = move_3(current_coord[0], current_coord[1])
+            if current_coord in location_matrix:
+                chain.append(current_coord)
+    elif move == move_11:
+        for i in range(num_marbles - 1):
+            current_coord = move_5(current_coord[0], current_coord[1])
+            if current_coord in location_matrix:
+                chain.append(current_coord)
+    return chain
+
+
+def get_opp_chain(move, current_coord, location_matrix):
+    """
+    Return the coordinates of the opposite player's chain of marbles.
+    :param move_type:
+    :param current_coord:
+    :param location_matrix:
+    :return:
+    """
+    opp_chain = []
+
+    next_coord = move(current_coord[0], current_coord[1])
+
+    for i in range(3):
+        if next_coord != (-1, -1) and next_coord in location_matrix:
+            opp_chain.append(next_coord)
+            next_coord = move(next_coord[0], next_coord[1])
+
+    return opp_chain
+
+
+def check_if_legal(x, y):
+    legal = True
+    if (x > 8 or x < 0) or (y < 0 or y > 8):
+        legal = False
+    if (x == 0 or x == 8) and y > 4:
+        legal = False
+    if (x == 1 or x == 7) and y > 5:
+        legal = False
+    if (x == 2 or x == 6) and y > 6:
+        legal = False
+    if (x == 3 or x == 5) and y > 7:
+        legal = False
+    return legal
+
+
+# Defining simple moves in each direction
+def move_1(x, y):
+    new_coord = -1, -1
+    point = -1, -1
+
+    if x != 0 and (x, y) != (-1, -1):
+
+        current_coord = coord_dict[(x, y)]
+        new_coord = [letter_and_numOffset[x - 1][0], current_coord[1] + 1]
+        for key in coord_dict:
+            if coord_dict[key] == new_coord:
+                point = key
+    return point
+
+
+def move_3(x, y):
+    new_coord = -1, -1
+    point = -1, -1
+    if (x, y + 1) in coord_dict:
+        current_coord = coord_dict[(x, y)]
+        new_coord = coord_dict[(x, y + 1)]
+        for key in coord_dict:
+            if coord_dict[key] == new_coord:
+                point = key
+    return point
+
+
+def move_5(x, y):
+    new_coord = -1, -1
+    point = -1, -1
+    if x != 8 and (x, y) != (-1, -1):
+
+        current_coord = coord_dict[(x, y)]
+        new_coord = [letter_and_numOffset[x + 1][0], current_coord[1]]
+        for key in coord_dict:
+            if coord_dict[key] == new_coord:
+                point = key
+    return point
+
+
+def move_7(x, y):
+    new_coord = -1, -1
+    point = -1, -1
+
+    if x != 8 and (x, y) != (-1, -1):
+        current_coord = coord_dict[(x, y)]
+        new_coord = [letter_and_numOffset[x + 1][0], current_coord[1] - 1]
+        for key in coord_dict:
+            if coord_dict[key] == new_coord:
+                point = key
+    return point
+
+
+def move_9(x, y):
+    new_coord = -1, -1
+    point = -1, -1
+    if (x, y - 1) in coord_dict:
+        current_coord = coord_dict[(x, y)]
+        new_coord = coord_dict[(x, y - 1)]
+        for key in coord_dict:
+            if coord_dict[key] == new_coord:
+                point = key
+    return point
+
+
+def move_11(x, y):
+    new_coord = -1, -1
+    point = -1, -1
+    if x != 0 and (x, y) != (-1, -1):
+
+        current_coord = coord_dict[(x, y)]
+        new_coord = [letter_and_numOffset[x - 1][0], current_coord[1]]
+        for key in coord_dict:
+            if coord_dict[key] == new_coord:
+                point = key
+    return point
+
+
+def main():
+    matrix, player_color = get_input("Test1.input")
+    resultDic = generate_moves(matrix, player_color)
+    print("Inline", resultDic['inline_ply_moves'])
+    print("SS", resultDic['sidestep_ply_moves'])
+    print("Opposite moves", resultDic['inline_opp_moves'])
+    show_grid(matrix)
+
+
+if __name__ == '__main__':
+    main()
