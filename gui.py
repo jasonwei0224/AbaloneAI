@@ -45,7 +45,7 @@ config_layout = [[sg.Text('Select Initial Board Layout', text_color="yellow")],
 def generate_game_info_layout(player1_color, player2_color):
     game_info_layout = [[sg.Button('Play'), sg.Button('Pause'), sg.Button('Stop'), sg.Button('Undo')],
                         [sg.VerticalSeparator(pad=((0, 0), (10, 20)))],
-                        [sg.InputText("Please Enter your move", key='move'), sg.Button("Submit")],
+                        [sg.InputText("Enter your move: type, starting nodes, ending nodes", key='move'), sg.Button("Submit")],
                         [sg.Text('Next Move: ....'), ],
                         [sg.VerticalSeparator(pad=((0, 0), (10, 20)))],
                         [sg.Text('Player 1: 0'),
@@ -57,8 +57,8 @@ def generate_game_info_layout(player1_color, player2_color):
                         [sg.VerticalSeparator(pad=((0, 0), (10, 20)))],
                         [sg.Text('Moves Taken by Player 1:   ', pad=((0, 50), (0, 0))),
                          sg.Text('Moves Taken by Player 2: ')],
-                        [sg.Multiline('Moves Taken by Player 1:   ', size=(25, 10)),
-                         sg.Multiline('Moves Taken by Player 2: ', size=(25, 10))],
+                        [sg.Multiline('', size=(25, 10), key="p1_move"),
+                         sg.Multiline('', size=(25, 10), key="p2_move")],
                         ]
 
     return game_info_layout
@@ -96,7 +96,10 @@ def draw_board(canvas, matrix):
 
 def validate_input(move_str):
     # TODO Need to implement
-    pass
+    print(move_str)
+    print(move_str.split(","))
+    return True
+
 
 
 def update_board(move_str):
@@ -166,22 +169,28 @@ elif event == 'Start':
     canvas = window2['graph']
     # Draw the board
     draw_board(canvas, selected_board)
-
+    turn = 1
     while True:
         event, values = window2.read()
-
         if event == "Submit":
             move = window2['move'].Get()  # Get the move that user input
             if validate_input(move):
-                # update board
-                # update_board(move)
+
+                if turn == 1:
+                    window2["p1_move"].update(window2["p1_move"].Get() + move)
+                    turn = 2 if 1 else 1
+                else:
+                    window2["p2_move"].update(window2["p2_move"].Get() + move)
+                    turn = 1 if 2 else 2
+
+                # Redraw the board
+                draw_board(canvas, selected_board)
                 pass
             else:
                 # show error
                 pass
 
-            # Redraw the board
-            draw_board(canvas, selected_board)
+
         elif event == sg.WIN_CLOSED or event == 'Exit':
             print(event)
             break
