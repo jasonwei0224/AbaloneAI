@@ -4,10 +4,13 @@
 
 
 def generate_result_board(move_notation: [], board_info: []):
+    # move notation's variables
     move_type = move_notation[0]
     start_coords = move_notation[1]
     dest_coords = move_notation[2]
+    # board after perform the move notation
     result_board = [board_value for board_value in board_info if board_value not in start_coords]
+    # this function return the result dictionary, if enemy pushed off edge isScore = True
     result_dict = {'board': None, 'isScore': False}
     if validate_move_destination(dest_coords, result_board):
         print("invalid move_notation. Destination coordinate is not empty nor contains opponent marble")
@@ -17,6 +20,7 @@ def generate_result_board(move_notation: [], board_info: []):
         [result_board.append(dest_coord) for dest_coord in dest_coords]
     if move_type == "I":
         for dest_coord in dest_coords:
+            # check and perform push, else regular update if no enemy marble in dest_coords
             if dest_coord[0:2] in [result_coord[0:2] for result_coord in result_board]:
                 if dest_coord[2] == 'w':
                     opponent_color = 'b'
