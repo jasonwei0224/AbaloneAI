@@ -1,4 +1,5 @@
-import move_generator, GenerateBoard
+import move_generator, GenerateBoard, constant
+
 import PySimpleGUI as sg
 
 
@@ -60,7 +61,7 @@ def main():
             file.write(result_board[-1])
             file.write("\n")
 
-    # move_generator.show_grid(matrix)
+    move_generator.show_grid(matrix)
 
 
 if __name__ == '__main__':
