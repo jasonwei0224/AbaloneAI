@@ -1,5 +1,7 @@
 import PySimpleGUI as sg
 import constant
+import GenerateBoard
+import game_playing_agent
 
 # List of options for user to choose from
 board_choice = ['Standard', 'German Daisy', 'Belgian Daisy']
@@ -45,20 +47,20 @@ config_layout = [[sg.Text('Select Initial Board Layout', text_color="yellow")],
 def generate_game_info_layout(player1_color, player2_color):
     game_info_layout = [[sg.Button('Play'), sg.Button('Pause'), sg.Button('Stop'), sg.Button('Undo')],
                         [sg.VerticalSeparator(pad=((0, 0), (10, 20)))],
-                        [sg.InputText("Please Enter your move", key='move'), sg.Button("Submit")],
-                        [sg.Text('Next Move: ....'), ],
-                        [sg.VerticalSeparator(pad=((0, 0), (10, 20)))],
-                        [sg.Text('Player 1: 0'),
+                        [sg.InputText("Enter your move: type, starting nodes, ending nodes", key='move'), sg.Button("Submit")],
+                        [sg.Text('Next Move: ', key="next_move", size=(50,1))],
+                        [sg.Text('Number of moves taken: ', key="num_of_moves", size=(50,1))],
+                        [sg.Text('Player 1 Out: 0', key="p1_out"),
                          sg.Text('Player 1 color: ' + ("White" if player1_color == 1 else "Black"))],
-                        [sg.Text('Player 2: 0'),
+                        [sg.Text('Player 2 Out: 0', key = "p2_out"),
                          sg.Text('Player 2 color: ' + ("Black" if player2_color == 2 else "White"))],
                         [sg.Text('Time Taken by Player 1:   ')],
                         [sg.Text('Time Taken by Player 2:  ')],
                         [sg.VerticalSeparator(pad=((0, 0), (10, 20)))],
-                        [sg.Text('Moves Taken by Player 1:   ', pad=((0, 50), (0, 0))),
-                         sg.Text('Moves Taken by Player 2: ')],
-                        [sg.Multiline('Moves Taken by Player 1:   ', size=(25, 10)),
-                         sg.Multiline('Moves Taken by Player 2: ', size=(25, 10))],
+                        [sg.Text('Moves Taken by Player 1:   ', pad=((0, 50), (0, 0)), key='p1_move_limit'),
+                         sg.Text('Moves Taken by Player 2: ', key='p2_move_limit')],
+                        [sg.Multiline('', size=(25, 10), key="p1_move"),
+                         sg.Multiline('', size=(25, 10), key="p2_move")],
                         ]
 
     return game_info_layout
@@ -96,7 +98,10 @@ def draw_board(canvas, matrix):
 
 def validate_input(move_str):
     # TODO Need to implement
-    pass
+    print(move_str)
+    print(move_str.split(","))
+    return True
+
 
 
 def update_board(move_str):
@@ -112,6 +117,46 @@ def update_board(move_str):
     selected_board[end_row][end_col + start_row] = selected_board[start_row][start_col]
     selected_board[start_row][start_col] = 0
 
+def coordinates_to_notation(row, col):
+    """
+    change matrix row, col to notation used in class
+    :param row: int
+    :param col: int
+    :return: string E.g. "A1"
+    """
+    return str(constant.LETTER_AND_NUM_OFFSET[row][0]) + str(col + constant.LETTER_AND_NUM_OFFSET[row][1])
+
+def text_to_matrix_board(text_board_format):
+    location_matrix = constant.EMPTY_BOARD
+    for value in text_board_format:
+        row = constant.LOCATION_DICT[value[0]]
+        col = int(value[1]) - constant.LETTER_AND_NUM_OFFSET[row][1]
+        location_matrix[row][col] = 1 if value[2] == 'w' else 2
+    return location_matrix
+
+def translate_board_format_to_text(selected_board):
+    text_board_format = []
+    for row in range(len(selected_board)):
+        for col in range(len(selected_board[row])):
+            if selected_board[row][col] == 1 or selected_board[row][col] == 2:
+                text_board_format.append(coordinates_to_notation(row, col) + ("b" if selected_board[row][col] == 2 else 'w'))
+
+    return text_board_format
+
+def get_move_detail(moves):
+    """
+    print list of moves based on move notation with coordinate translate to notation used in class
+    :param moves: list of move notation [( move type, [starting coordinates], [end coordinates])]
+    :return:
+    """
+    for i in range(len(moves)):
+        origin = ""
+        dest = ""
+        for coordinate in moves[i][1]:
+            origin += coordinate + " "
+        for coordinate in moves[i][2]:
+            dest += coordinate + " "
+        return(moves[i][0] + ": " + str(origin) + " => " + str(dest))
 
 window = sg.Window('Game Configuration', config_layout, font=('arial', 15))
 
@@ -150,7 +195,7 @@ elif event == 'Start':
         game_mode = "comp"
 
     # Get the max moves and time limit for each player
-    max_moves = window["max_moves"].Get()
+    max_moves = int(window["max_moves"].Get())*2
     p1_time_limit = window["p1_time_limit"].Get()
     p2_time_limit = window["p2_time_limit"].Get()
 
@@ -166,22 +211,63 @@ elif event == 'Start':
     canvas = window2['graph']
     # Draw the board
     draw_board(canvas, selected_board)
+    turn = 1 if player1_color == 2 else 2
+    player1_out = 0
+    player2_out = 0
+    state_space = [player1_out, player2_out, selected_board]
+    num_moves = 0
 
     while True:
+        print(num_moves)
+        window2["num_of_moves"].update("Number of moves taken: " + str(num_moves) + " / " + str(max_moves))
         event, values = window2.read()
 
         if event == "Submit":
             move = window2['move'].Get()  # Get the move that user input
-            if validate_input(move):
-                # update board
-                # update_board(move)
-                pass
-            else:
-                # show error
-                pass
+            if turn == 1:
+                # TODO: CALL AI GAME AGENT HERE
+                # current state space to be passed into game playing agent
+                state_space = [
+                    player1_out,
+                    player2_out,
+                    selected_board]
 
-            # Redraw the board
-            draw_board(canvas, selected_board)
+                # call the game playing agent and get the board/move notation
+                # game_playing_agent.minimax(state_space, player1_color, 0, int(window['p1_time_limit'].Get()))
+
+                # move = "place_holder_moving" # get the move from the game playing agent to be passed into generate result board
+                # window2['next_move'].update(move)
+                # window2['next_move'].update(get_move_detail([move]))
+                # if selected_board['isScore']:
+                #     player2_out = + 1
+                #     window2['p2_out'].update(str(player2_out)) # update points if pushed off
+
+                # draw_board(canvas, selected_board)
+                window2["p1_move"].update(window2["p1_move"].Get() + get_move_detail([move])) # show moves
+                num_moves += 1  # update number of moves taken
+                window2["num_of_moves"].update("Number of moves taken: " + str(num_moves) + " / " + str(max_moves)) # update on gui
+                turn = 2 if 1 else 1 # change turns
+
+            else:
+                if validate_input(move):
+                    # OPPONENT
+                    # move notation example: ['I', ['G4w', 'H5w', 'I6w'], ['F3w','G4w','H5w']]
+                    move = ['I', ['G5w', 'G6w', 'G7w'], ['G6w','G7w','G8w']] # Remove when deploying!!
+                    text_board_format = translate_board_format_to_text(selected_board)
+                    new_board = GenerateBoard.generate_result_board(move, text_board_format) # get the updated board to be
+                    selected_board = text_to_matrix_board(new_board['board'])  # translate to matrix notation
+
+                    window2['next_move'].update("Next Move: " + get_move_detail([move])) # display next move on screen
+                    if new_board['isScore']:
+                        player1_out =+ 1
+                        window2['p1_out'].update(str(player1_out))
+                    draw_board(canvas, selected_board) # update board on gui
+                    window2["p2_move"].update(window2["p2_move"].Get() + get_move_detail([move])) # record move on screen
+                    num_moves += 1 # update number of moves taken
+                    window2["num_of_moves"].update("Number of moves taken: " + str(num_moves) + " / " + str(max_moves))
+                    turn = 1 if 2 else 2 # change turns
+
+
         elif event == sg.WIN_CLOSED or event == 'Exit':
             print(event)
             break
