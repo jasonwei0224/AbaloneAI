@@ -44,7 +44,9 @@ def max_value(state, alpha, beta, color, start_time, time_limit):
     sorted_moves = sort_moves(moves) # sorting the nodes
     for m in sorted_moves:
         # TODO: update state that is being passed in min_value, currently it's only a location matrix
-        v = max(v, min_value(generate_result_board([m], state[2]), alpha, beta, 2 if color == 1 else 1,start_time, time_limit))
+        # Get the board
+        # Update number of outs
+        v = max(v, min_value(generate_result_board([m], state[2]), alpha, beta, (2 if color == 1 else 1),start_time, time_limit))
         if v > beta:
             return v
         alpha = max(alpha, v)
@@ -77,12 +79,30 @@ def min_value(state, alpha, beta, color, start_time, time_limit):
     return v
 
 def sort_moves(moves):
-    #TODO sort the moves
     # Ordering of moves:
-    # 1. Inline w push
-    # 2. Side step 2 marble
-    # 4. single marble
+    # 1. Inline
+    # 2. Side step
+    # 3. single marble
+    # TODO future consideration: more detail move ordering e.g inlines moves that's closer to edge first
+    inline_two = []
+    inline_three = []
+    side_step_two = []
+    side_step_three = []
+    single = []
+    for m in moves['inline_ply_moves']:
+        if m[0] == 'I' and len(m[1]) == 1:
+            single.append(m)
+        elif m[0] == 'I' and len(m[1]) == 2:
+            inline_two.append(m)
+        elif m[0] == 'I' and len(m[1]) == 3:
+            inline_three.append(m)
+    for m in moves['sidestep_ply_moves']:
+        if m[0] == 'SS' and len(m[1]) == 2:
+            side_step_two.append([m])
+        elif m[0] == 'SS' and len(m[1]) == 3:
+            side_step_three.append([m])
 
+    sorted_moves = inline_three + inline_two + side_step_three +side_step_two + single
     return sorted_moves
 
 def terminal_test(state):
