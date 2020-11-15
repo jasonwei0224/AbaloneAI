@@ -8,6 +8,8 @@ from GenerateBoard import generate_result_board
 from visualize_board import show_board
 import copy
 
+MAX_DEPTH = 1
+
 def text_to_matrix_board(text_board_format):
     location_matrix = copy.deepcopy(constant.EMPTY_BOARD)
     for value in text_board_format:
@@ -68,32 +70,32 @@ def print_calculation_detail():
 
 # TODO: implement Iterative deepening
 def iterative_deepening(state, color, start_time, time_limit):
+
     depth = 0
     val = -sys.maxsize - 1
+    b = ""
     while True:
-        if depth == 1:
+        if depth >= MAX_DEPTH:
             break
         # start Time here
     #     current_time = datetime.datetime.now()
     #     if current_time>= time_limit:
     #         break
-
-    # for i in range(0, 2):
-        v = minimax(state, color, start_time, time_limit, depth)
+        v, best_move = minimax(state, color, start_time, time_limit, depth)
         if v >= val:
-            print(v)
             val = v
+            b = best_move
         depth+=1
-    return val
+    return val, b
 
 
 
 def minimax(state, color, start_time, time_limit, depth):
 
-    v = max_value(state, -sys.maxsize - 1, sys.maxsize - 1, color, start_time, time_limit, depth)
+    v = max_value(state, -sys.maxsize - 1, sys.maxsize - 1, color, start_time, time_limit, depth, "")
     return v
 
-def max_value(state, alpha, beta, color, start_time, time_limit, depth):
+def max_value(state, alpha, beta, color, start_time, time_limit, depth, best_move):
     """
     :param state:  [# of marbles out for competitor, # of marbles out for player,
                     [all player 1 marbles’ position(eg. A1,A2…)],[all player 2 marbles’ position],
@@ -109,9 +111,10 @@ def max_value(state, alpha, beta, color, start_time, time_limit, depth):
     print('\nmax', "Color is: " , color)
     if terminal_test(state):
         return eval(state)
-    if depth == 1:
+    if depth >= MAX_DEPTH:
         return eval(state)
     v = -sys.maxsize - 1
+    best_move = ""
     moves = generate_moves(state[2], color)
     sorted_moves = sort_moves(moves) # sorting the nodes
     # print(sorted_moves)
@@ -119,7 +122,6 @@ def max_value(state, alpha, beta, color, start_time, time_limit, depth):
         # TODO: update state that is being passed in min_value, currently it's only a location matrix
         # Get the board
         # Update number of outs
-        print(m)
         m_with_color = tanslate_move_notation_to_with_color(m, state[2])
 
         user_num_out = state[0]
@@ -136,14 +138,15 @@ def max_value(state, alpha, beta, color, start_time, time_limit, depth):
         new_state = [user_num_out, opp_num_out, matrix_board]
         print("The move: ", m_with_color, "\nprevious state: ", state[:2], "\ncurrent state after move: ", new_state[:2], "\nmarble pushed: ", result_board['isScore'])
         # show_board(result_board['board'])
-        v = max(v, min_value(new_state, alpha, beta, (2 if color == 1 else 1) ,start_time, time_limit, depth+1))
+        new_val, best_move = min_value(new_state, alpha, beta, (2 if color == 1 else 1) ,start_time, time_limit, depth+1, m_with_color)
+        v = max(v, new_val)
         if v > beta:
-            return v
+            return v, best_move
         alpha = max(alpha, v)
-    return v
+    return v, best_move
 
 
-def min_value(state, alpha, beta, color, start_time, time_limit, depth):
+def min_value(state, alpha, beta, color, start_time, time_limit, depth, best_move):
     """
     :param state:  [# of marbles out for competitor, # of marbles out for player,
                     [all player 1 marbles’ position(eg. A1,A2…)],[all player 2 marbles’ position],
@@ -156,12 +159,14 @@ def min_value(state, alpha, beta, color, start_time, time_limit, depth):
     :param time_limit:
     :return:
     """
+    # best_move = ""
     print("\nmin", "Color is: " , color)
     if terminal_test(state):
-        return eval(state)
-    if depth == 1:
-        return eval(state)
+        return eval(state), best_move
+    if depth >= MAX_DEPTH:
+        return eval(state), best_move
     v = sys.maxsize - 1
+    best_move = ""
     moves = generate_moves(state[2], color)
     sorted_moves = sort_moves(moves)  # sorting the nodes
     # print(sorted_moves)
@@ -183,11 +188,13 @@ def min_value(state, alpha, beta, color, start_time, time_limit, depth):
         new_state = [user_num_out, opp_num_out, matrix_board]
         print("The move: ", m_with_color, "\nprevious state: ", state[:2], "\ncurrent state after move: ", new_state[:2], "\nmarble pushed: ", result_board['isScore'])
         # show_board(result_board['board'])
-        v = min(v, max_value(new_state, alpha, beta, (2 if color == 1 else 1), start_time, time_limit, depth))
+        new_val, best_move = max_value(new_state, alpha, beta, (2 if color == 1 else 1), start_time, time_limit, depth +1, m_with_color)
+        print(v)
+        v = min(v, new_val)
         if v <= beta:
-            return v
+            return v, best_move
         beta = min(beta, v)
-    return v
+    return v, best_move
 
 def sort_moves(moves):
     # Ordering of moves:
