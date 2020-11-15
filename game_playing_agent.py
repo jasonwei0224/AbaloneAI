@@ -50,7 +50,7 @@ def notation_to_coordinates(s):
         int(constant.LOCATION_DICT[s[0]]), int(s[1]) - constant.LETTER_AND_NUM_OFFSET[constant.LOCATION_DICT[s[0]]][1])
 
 def tanslate_move_notation_to_with_color(move_notation, location_matrix):
-    color = location_matrix[notation_to_coordinates(move_notation[1][0])[0]][notation_to_coordinates(move_notation[1][0])[1]]
+
     for i in range(len(move_notation[1])):
         if location_matrix[notation_to_coordinates(move_notation[1][i])[0]][notation_to_coordinates(move_notation[1][i])[1]] == 1:
             move_notation[1][i] = move_notation[1][i] + 'w'
@@ -68,17 +68,22 @@ def print_calculation_detail():
 
 # TODO: implement Iterative deepening
 def iterative_deepening(state, color, start_time, time_limit):
-    # while True:
-    #     # start Time here
+    depth = 0
+    val = -sys.maxsize - 1
+    while True:
+        if depth == 1:
+            break
+        # start Time here
     #     current_time = datetime.datetime.now()
     #     if current_time>= time_limit:
     #         break
-    val = -sys.maxsize - 1
+
     # for i in range(0, 2):
-    v = minimax(state, color, start_time, time_limit, 0)
-    if v >= val:
-        print(v)
-        val = v
+        v = minimax(state, color, start_time, time_limit, depth)
+        if v >= val:
+            print(v)
+            val = v
+        depth+=1
     return val
 
 
@@ -104,7 +109,7 @@ def max_value(state, alpha, beta, color, start_time, time_limit, depth):
     print('\nmax', "Color is: " , color)
     if terminal_test(state):
         return eval(state)
-    if depth == 0:
+    if depth == 1:
         return eval(state)
     v = -sys.maxsize - 1
     moves = generate_moves(state[2], color)
@@ -114,6 +119,7 @@ def max_value(state, alpha, beta, color, start_time, time_limit, depth):
         # TODO: update state that is being passed in min_value, currently it's only a location matrix
         # Get the board
         # Update number of outs
+        print(m)
         m_with_color = tanslate_move_notation_to_with_color(m, state[2])
 
         user_num_out = state[0]
@@ -130,7 +136,7 @@ def max_value(state, alpha, beta, color, start_time, time_limit, depth):
         new_state = [user_num_out, opp_num_out, matrix_board]
         print("The move: ", m_with_color, "\nprevious state: ", state[:2], "\ncurrent state after move: ", new_state[:2], "\nmarble pushed: ", result_board['isScore'])
         # show_board(result_board['board'])
-        v = max(v, min_value(new_state, alpha, beta, (2 if color == 1 else 1) ,start_time, time_limit, depth))
+        v = max(v, min_value(new_state, alpha, beta, (2 if color == 1 else 1) ,start_time, time_limit, depth+1))
         if v > beta:
             return v
         alpha = max(alpha, v)
@@ -153,7 +159,7 @@ def min_value(state, alpha, beta, color, start_time, time_limit, depth):
     print("\nmin", "Color is: " , color)
     if terminal_test(state):
         return eval(state)
-    if depth == 0:
+    if depth == 1:
         return eval(state)
     v = sys.maxsize - 1
     moves = generate_moves(state[2], color)
@@ -203,9 +209,9 @@ def sort_moves(moves):
             inline_three.append(m)
     for m in moves['sidestep_ply_moves']:
         if m[0] == 'SS' and len(m[1]) == 2:
-            side_step_two.append([m])
+            side_step_two.append(m)
         elif m[0] == 'SS' and len(m[1]) == 3:
-            side_step_three.append([m])
+            side_step_three.append(m)
 
     sorted_moves = inline_three + inline_two + side_step_three +side_step_two + single
     return sorted_moves
