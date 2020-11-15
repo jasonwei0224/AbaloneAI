@@ -3,6 +3,7 @@ import constant
 import GenerateBoard
 import game_playing_agent
 import copy
+from GenerateBoard import generate_result_board
 
 # List of options for user to choose from
 board_choice = ['Standard', 'German Daisy', 'Belgian Daisy']
@@ -66,6 +67,11 @@ def generate_game_info_layout(player1_color, player2_color):
 
     return game_info_layout
 
+def tanslate_move_notation_to_with_no_color(move_notation):
+    for i in range(len(move_notation[1])):
+        move_notation[1][i] = move_notation[1][i][:2]
+        move_notation[2][i] = move_notation[2][i][:2]
+    return move_notation
 
 def draw_board(canvas, matrix):
     """
@@ -99,24 +105,22 @@ def draw_board(canvas, matrix):
 
 def validate_input(move_str):
     # TODO Need to implement
-    print(move_str)
-    print(move_str.split(","))
     return True
 
+def translate_move(move_str):
+    move_lst = move_str.split(",")
+    move = ""
+    if len(move_lst[1:]) == 6:
+        move = (move_lst[0], (move_lst[1:4]), (move_lst[4:]))
+
+    elif len(move_lst[1:]) == 4:
+        move = (move_lst[0], (move_lst[1:3]), (move_lst[3:]))
+        print(move)
+    elif len(move_lst[1:]) == 2:
+        move = (move_lst[0], [move_lst[1]], [move_lst[2]])
+    return move
 
 
-def update_board(move_str):
-    # TODO move base on user input
-    # Get the starting row, column and ending row, column of a marble
-    # Currently only work with moving single marble
-    start_row = location_dict[move[0]]
-    start_col = int(move[1]) - start_row
-    end_row = location_dict[move[3]]
-    end_col = int(move[4]) - end_row
-
-    # update the Abalone representation of the board
-    selected_board[end_row][end_col + start_row] = selected_board[start_row][start_col]
-    selected_board[start_row][start_col] = 0
 
 def coordinates_to_notation(row, col):
     """
@@ -235,16 +239,18 @@ elif event == 'Start':
                     selected_board]
 
                 # call the game playing agent and get the board/move notation
-                v = game_playing_agent.iterative_deepening(state_space, player1_color, 0, int(window['p1_time_limit'].Get()))
-                print(v)
-                # move = "place_holder_moving" # get the move from the game playing agent to be passed into generate result board
-                # window2['next_move'].update(move)
-                # window2['next_move'].update(get_move_detail([move]))
-                # if selected_board['isScore']:
-                #     player2_out = + 1
-                #     window2['p2_out'].update(str(player2_out)) # update points if pushed off
+                v, move = game_playing_agent.iterative_deepening(state_space, player1_color, 0, int(window['p1_time_limit'].Get()))
+                print(v, move)
+                text_board_format = translate_board_format_to_text(selected_board)
+                new_board = GenerateBoard.generate_result_board(move, text_board_format)  # get the updated board to be
+                selected_board = text_to_matrix_board(new_board['board'])
+                move_notation_no_color = tanslate_move_notation_to_with_no_color(move)
+                window2['next_move'].update(get_move_detail([move_notation_no_color]))
+                if new_board['isScore']:
+                    player2_out = + 1
+                    window2['p2_out'].update(str(player2_out)) # update points if pushed off
 
-                # draw_board(canvas, selected_board)
+                draw_board(canvas, selected_board)
                 window2["p1_move"].update(window2["p1_move"].Get() + get_move_detail([move])) # show moves
                 num_moves += 1  # update number of moves taken
                 window2["num_of_moves"].update("Number of moves taken: " + str(num_moves) + " / " + str(max_moves)) # update on gui
@@ -252,9 +258,10 @@ elif event == 'Start':
 
             else:
                 if validate_input(move):
-                    # OPPONENT
-                    # move notation example: ['I', ['G4w', 'H5w', 'I6w'], ['F3w','G4w','H5w']]
-                    move = ['I', ['G5w', 'G6w', 'G7w'], ['G6w','G7w','G8w']] # Remove when deploying!!
+                    # OPPONENT INPUT: Type, coordinates no space
+
+                    move = translate_move(move)
+                    print(move)
                     text_board_format = translate_board_format_to_text(selected_board)
                     new_board = GenerateBoard.generate_result_board(move, text_board_format) # get the updated board to be
                     selected_board = text_to_matrix_board(new_board['board'])  # translate to matrix notation

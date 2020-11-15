@@ -126,8 +126,8 @@ def max_value(state, alpha, beta, color, start_time, time_limit, depth, best_mov
         new_state = [user_num_out, opp_num_out, matrix_board]
         print("The move: ", m_with_color, "\nprevious state: ", state[:2], "\ncurrent state after move: ", new_state[:2], "\nmarble pushed: ", result_board['isScore'])
         new_val, best_move = min_value(new_state, alpha, beta, (2 if color == 1 else 1) ,start_time, time_limit, depth+1, m_with_color)
-        print(v, new_val)
-        v = max("current value: ", v, "new value: " ,new_val)
+        print("current value: ", v, "new value: " ,new_val)
+        v = max( v, new_val)
         if v > beta:
             return v, best_move
         alpha = max(alpha, v)
@@ -156,6 +156,7 @@ def min_value(state, alpha, beta, color, start_time, time_limit, depth, best_mov
     sorted_moves = sort_moves(moves)  # sorting the nodes
     for m in sorted_moves:
         m_with_color = tanslate_move_notation_to_with_color(m, state[2])
+
         user_num_out = state[1]
         txt_board = translate_board_format_to_text(state[2])
         result_board = generate_result_board(m_with_color, txt_board)
