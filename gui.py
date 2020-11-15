@@ -170,13 +170,13 @@ elif event == 'Start':
 
     # Get the initial board layout
     if window["Standard"].Get():
-        selected_board = constant.DEFAULT_BOARD.copy()
+        selected_board = copy.deepcopy(constant.DEFAULT_BOARD)
     elif window["German Daisy"].Get():
-        selected_board = constant.GERMAN_BOARD.copy()
+        selected_board = copy.deepcopy(constant.GERMAN_BOARD)
     elif window["Belgian Daisy"].Get():
-        selected_board = constant.BELGIAN_BOARD.copy()
+        selected_board = copy.deepcopy(constant.BELGIAN_BOARD)
     else:
-        selected_board = constant.DEFAULT_BOARD.copy()
+        selected_board = copy.deepcopy(constant.DEFAULT_BOARD)
 
     # Get the player color
     # White = 1
