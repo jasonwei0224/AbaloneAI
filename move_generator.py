@@ -81,7 +81,7 @@ def draw_board(canvas, matrix):
 
 
 def generate_moves(matrix, player_color):
-    print("generating moves for ", player_color)
+    # print("generating moves for ", player_color)
     inline_ply_moves, inline_opp_moves = generate_inline(player_color, matrix)
     sidestep_ply_moves = generate_sidestep(player_color, matrix)
 
@@ -96,7 +96,8 @@ def generate_inline(color, location_matrix):
     :return:
     """
     # print(color)
-    player = 1 if color == 'w' else 2
+    # player = 1 if color == 'w' else 2
+    player = color
     locations = [(ix, iy) for ix, row in enumerate(location_matrix) for iy, i in enumerate(row) if i == player]
     opp_loc = [(ix, iy) for ix, row in enumerate(location_matrix) for iy, i in enumerate(row) if i != player and i != 0]
 

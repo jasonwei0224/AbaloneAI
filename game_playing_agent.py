@@ -1,4 +1,6 @@
 import sys
+from random import random
+
 import constant
 import datetime
 from move_generator import generate_moves
@@ -8,7 +10,6 @@ import copy
 
 def text_to_matrix_board(text_board_format):
     location_matrix = copy.deepcopy(constant.EMPTY_BOARD)
-    print(location_matrix[8][0])
     for value in text_board_format:
         row = constant.LOCATION_DICT[value[0]]
         col = int(value[1]) - constant.LETTER_AND_NUM_OFFSET[row][1]
@@ -18,7 +19,7 @@ def text_to_matrix_board(text_board_format):
             location_matrix[row][col] = 2
         else:
             location_matrix[row][col] = 0
-    print(location_matrix)
+
     return location_matrix
 
 def translate_board_format_to_text(selected_board):
@@ -53,22 +54,15 @@ def tanslate_move_notation_to_with_color(move_notation, location_matrix):
     for i in range(len(move_notation[1])):
         if location_matrix[notation_to_coordinates(move_notation[1][i])[0]][notation_to_coordinates(move_notation[1][i])[1]] == 1:
             move_notation[1][i] = move_notation[1][i] + 'w'
-            if location_matrix[notation_to_coordinates(move_notation[2][i])[0]][notation_to_coordinates(move_notation[2][i])[1]] == 0:
-                move_notation[2][i] = move_notation[2][i] + 'w'
+            move_notation[2][i] = move_notation[2][i] + 'w'
         if location_matrix[notation_to_coordinates(move_notation[1][i])[0]][notation_to_coordinates(move_notation[1][i])[1]] == 2:
             move_notation[1][i] = move_notation[1][i] + 'b'
-            if location_matrix[notation_to_coordinates(move_notation[2][i])[0]][notation_to_coordinates(move_notation[2][i])[1]] == 0:
-                move_notation[2][i] = move_notation[2][i] + 'b'
-        if location_matrix[notation_to_coordinates(move_notation[2][i])[0]][notation_to_coordinates(move_notation[2][i])[1]] == 2:
             move_notation[2][i] = move_notation[2][i] + 'b'
-        if location_matrix[notation_to_coordinates(move_notation[2][i])[0]][notation_to_coordinates(move_notation[2][i])[1]] == 1:
-            move_notation[2][i] = move_notation[2][i] + 'w'
-        # if location_matrix[notation_to_coordinates(move_notation[2][i])[0]][notation_to_coordinates(move_notation[2][i])[1]] == 0:
-        #     if color == 1:
-        #         move_notation[2][i] = move_notation[2][i] + 'w'
-        #     else:
-        #         move_notation[2][i] = move_notation[2][i] + 'b'
+
     return move_notation
+
+def print_calculation_detail():
+    pass
 
 # TODO: transposition table
 
@@ -80,21 +74,21 @@ def iterative_deepening(state, color, start_time, time_limit):
     #     if current_time>= time_limit:
     #         break
     val = -sys.maxsize - 1
-    for i in range(1, 2):
-        v = minimax(state, color, start_time, time_limit)
-        if v > val:
-            print(v)
-            val = v
+    # for i in range(0, 2):
+    v = minimax(state, color, start_time, time_limit, 0)
+    if v >= val:
+        print(v)
+        val = v
     return val
 
 
 
-def minimax(state, color, start_time, time_limit):
+def minimax(state, color, start_time, time_limit, depth):
 
-    v = max_value(state, -sys.maxsize - 1, sys.maxsize - 1, color, start_time, time_limit)
+    v = max_value(state, -sys.maxsize - 1, sys.maxsize - 1, color, start_time, time_limit, depth)
     return v
 
-def max_value(state, alpha, beta, color, start_time, time_limit):
+def max_value(state, alpha, beta, color, start_time, time_limit, depth):
     """
     :param state:  [# of marbles out for competitor, # of marbles out for player,
                     [all player 1 marbles’ position(eg. A1,A2…)],[all player 2 marbles’ position],
@@ -107,8 +101,10 @@ def max_value(state, alpha, beta, color, start_time, time_limit):
     :param time_limit:
     :return:
     """
-    print('max', color)
+    print('\nmax', "Color is: " , color)
     if terminal_test(state):
+        return eval(state)
+    if depth == 0:
         return eval(state)
     v = -sys.maxsize - 1
     moves = generate_moves(state[2], color)
@@ -122,25 +118,26 @@ def max_value(state, alpha, beta, color, start_time, time_limit):
 
         user_num_out = state[0]
         txt_board = translate_board_format_to_text(state[2])
-        print(m_with_color)
+        # print(m_with_color)
         # print(state[2])
         # print(txt_board)
-        show_board(txt_board)
+        # show_board(txt_board)
         result_board = generate_result_board(m_with_color, txt_board)
-        print(result_board)
+        # print(result_board)
         # print(translate_board_format_to_text(text_to_matrix_board(result_board['board'])))
         matrix_board = text_to_matrix_board(result_board['board'])
-        show_board(result_board['board'])
-        opp_num_out = ((state[2] + 1) if result_board['isScore'] else state[2])
+        opp_num_out = ((state[1] + 1) if result_board['isScore'] else state[1])
         new_state = [user_num_out, opp_num_out, matrix_board]
-        v = max(v, min_value(new_state, alpha, beta, (2 if color == 1 else 1) ,start_time, time_limit))
+        print("The move: ", m_with_color, "\nprevious state: ", state[:2], "\ncurrent state after move: ", new_state[:2], "\nmarble pushed: ", result_board['isScore'])
+        # show_board(result_board['board'])
+        v = max(v, min_value(new_state, alpha, beta, (2 if color == 1 else 1) ,start_time, time_limit, depth))
         if v > beta:
             return v
         alpha = max(alpha, v)
     return v
 
 
-def min_value(state, alpha, beta, color, start_time, time_limit):
+def min_value(state, alpha, beta, color, start_time, time_limit, depth):
     """
     :param state:  [# of marbles out for competitor, # of marbles out for player,
                     [all player 1 marbles’ position(eg. A1,A2…)],[all player 2 marbles’ position],
@@ -153,8 +150,10 @@ def min_value(state, alpha, beta, color, start_time, time_limit):
     :param time_limit:
     :return:
     """
-    print("min", color)
+    print("\nmin", "Color is: " , color)
     if terminal_test(state):
+        return eval(state)
+    if depth == 0:
         return eval(state)
     v = sys.maxsize - 1
     moves = generate_moves(state[2], color)
@@ -162,18 +161,23 @@ def min_value(state, alpha, beta, color, start_time, time_limit):
     # print(sorted_moves)
     for m in sorted_moves:
         m_with_color = tanslate_move_notation_to_with_color(m, state[2])
-        user_num_out = state[0]
+
+        user_num_out = state[1]
         txt_board = translate_board_format_to_text(state[2])
-        print(m_with_color)
+        # print(m_with_color)
         # print(state[2])
         # print(txt_board)
-        show_board(txt_board)
+        # show_board(txt_board)
         result_board = generate_result_board(m_with_color, txt_board)
-        show_board(result_board['board'])
+        # print(result_board)
+        # print(translate_board_format_to_text(text_to_matrix_board(result_board['board'])))
         matrix_board = text_to_matrix_board(result_board['board'])
-        opp_num_out = ((state[2] + 1) if result_board['isScore'] else state[2])
+
+        opp_num_out = ((state[0] + 1) if result_board['isScore'] else state[0])
         new_state = [user_num_out, opp_num_out, matrix_board]
-        v = min(v, max_value(new_state, alpha, beta, (2 if color == 1 else 1), start_time, time_limit))
+        print("The move: ", m_with_color, "\nprevious state: ", state[:2], "\ncurrent state after move: ", new_state[:2], "\nmarble pushed: ", result_board['isScore'])
+        # show_board(result_board['board'])
+        v = min(v, max_value(new_state, alpha, beta, (2 if color == 1 else 1), start_time, time_limit, depth))
         if v <= beta:
             return v
         beta = min(beta, v)
@@ -217,6 +221,6 @@ def eval(state):
     if(terminal_test(state)):
         return 1000000000000 # return highest value
     else:
-        return 10
+        return 10 * random()
     #TODO finish implemetning
     # the higher the number of enemy at edge and number of pushed off it should get more points
