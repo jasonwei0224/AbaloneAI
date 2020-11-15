@@ -2,6 +2,7 @@ import PySimpleGUI as sg
 import constant
 import GenerateBoard
 import game_playing_agent
+import copy
 
 # List of options for user to choose from
 board_choice = ['Standard', 'German Daisy', 'Belgian Daisy']
@@ -127,7 +128,8 @@ def coordinates_to_notation(row, col):
     return str(constant.LETTER_AND_NUM_OFFSET[row][0]) + str(col + constant.LETTER_AND_NUM_OFFSET[row][1])
 
 def text_to_matrix_board(text_board_format):
-    location_matrix = constant.EMPTY_BOARD
+    # location_matrix =constant.EMPTY_BOARD[:]
+    location_matrix = copy.deepcopy(constant.EMPTY_BOARD)
     for value in text_board_format:
         row = constant.LOCATION_DICT[value[0]]
         col = int(value[1]) - constant.LETTER_AND_NUM_OFFSET[row][1]
@@ -168,13 +170,13 @@ elif event == 'Start':
 
     # Get the initial board layout
     if window["Standard"].Get():
-        selected_board = constant.DEFAULT_BOARD
+        selected_board = constant.DEFAULT_BOARD.copy()
     elif window["German Daisy"].Get():
-        selected_board = constant.GERMAN_BOARD
+        selected_board = constant.GERMAN_BOARD.copy()
     elif window["Belgian Daisy"].Get():
-        selected_board = constant.BELGIAN_BOARD
+        selected_board = constant.BELGIAN_BOARD.copy()
     else:
-        selected_board = constant.DEFAULT_BOARD
+        selected_board = constant.DEFAULT_BOARD.copy()
 
     # Get the player color
     # White = 1
@@ -218,7 +220,7 @@ elif event == 'Start':
     num_moves = 0
 
     while True:
-        print(num_moves)
+        # print(num_moves)
         window2["num_of_moves"].update("Number of moves taken: " + str(num_moves) + " / " + str(max_moves))
         event, values = window2.read()
 
@@ -233,8 +235,8 @@ elif event == 'Start':
                     selected_board]
 
                 # call the game playing agent and get the board/move notation
-                # game_playing_agent.minimax(state_space, player1_color, 0, int(window['p1_time_limit'].Get()))
-
+                v = game_playing_agent.iterative_deepening(state_space, player1_color, 0, int(window['p1_time_limit'].Get()))
+                print(v)
                 # move = "place_holder_moving" # get the move from the game playing agent to be passed into generate result board
                 # window2['next_move'].update(move)
                 # window2['next_move'].update(get_move_detail([move]))
