@@ -139,7 +139,8 @@ def max_value(state, alpha, beta, color, start_time, time_limit, depth, best_mov
         print("The move: ", m_with_color, "\nprevious state: ", state[:2], "\ncurrent state after move: ", new_state[:2], "\nmarble pushed: ", result_board['isScore'])
         # show_board(result_board['board'])
         new_val, best_move = min_value(new_state, alpha, beta, (2 if color == 1 else 1) ,start_time, time_limit, depth+1, m_with_color)
-        v = max(v, new_val)
+        print(v, new_val)
+        v = max("current value: ", v, "new value: " ,new_val)
         if v > beta:
             return v, best_move
         alpha = max(alpha, v)
@@ -189,7 +190,7 @@ def min_value(state, alpha, beta, color, start_time, time_limit, depth, best_mov
         print("The move: ", m_with_color, "\nprevious state: ", state[:2], "\ncurrent state after move: ", new_state[:2], "\nmarble pushed: ", result_board['isScore'])
         # show_board(result_board['board'])
         new_val, best_move = max_value(new_state, alpha, beta, (2 if color == 1 else 1), start_time, time_limit, depth +1, m_with_color)
-        print(v)
+        print("current value: ", v, "new value: " ,new_val)
         v = min(v, new_val)
         if v <= beta:
             return v, best_move
