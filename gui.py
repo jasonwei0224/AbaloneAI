@@ -230,17 +230,24 @@ elif event == 'Start':
 
         if event == "Submit":
             move = window2['move'].Get()  # Get the move that user input
+
             if turn == 1:
+
                 # TODO: CALL AI GAME AGENT HERE
                 # current state space to be passed into game playing agent
                 state_space = [
                     player1_out,
                     player2_out,
-                    selected_board]
+                    selected_board,
+                    player1_color]
 
                 # call the game playing agent and get the board/move notation
-                v, move = game_playing_agent.iterative_deepening(state_space, player1_color, 0, int(window['p1_time_limit'].Get()))
-                print(v, move)
+                if num_moves == 0:
+                    v, move = game_playing_agent.iterative_deepening(state_space, player1_color, 0,
+                                                                     int(window['p1_time_limit'].Get()), True)
+                else:
+                    v, move = game_playing_agent.iterative_deepening(state_space, player1_color, 0, int(window['p1_time_limit'].Get()),False)
+                    print(v, move)
                 text_board_format = translate_board_format_to_text(selected_board)
                 new_board = GenerateBoard.generate_result_board(move, text_board_format)  # get the updated board to be
                 selected_board = text_to_matrix_board(new_board['board'])
