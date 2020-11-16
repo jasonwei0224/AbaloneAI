@@ -1,6 +1,6 @@
 import constant
 import PySimpleGUI as sg
-import numpy as np
+import copy
 
 # import gui
 
@@ -31,18 +31,17 @@ coord_dict = {(0, 0): ["I", 5], (0, 1): ["I", 6], (0, 2): ["I", 7], (0, 3): ["I"
 def get_input(file_name):
     file = open(file_name, "r")
     player_color = file.readline()
-    print(player_color)
+    # print(player_color)
     locations = file.readline().split(',')
 
-    location_matrix = constant.EMPTY_BOARD
-
+    location_matrix = copy.deepcopy(constant.EMPTY_BOARD)
     for value in locations:
         row = constant.LOCATION_DICT[value[0]]
         col = int(value[1]) - constant.LETTER_AND_NUM_OFFSET[row][1]
         color = 1 if value[2] == 'w' else 2
         location_matrix[row][col] = color
 
-    return location_matrix, player_color
+    return location_matrix, player_color #player_color[0]
 
 
 def draw_board(canvas, matrix):
@@ -82,6 +81,7 @@ def show_grid(location_matrix, ):
 
 
 def generate_moves(matrix, player_color):
+    # print("generating moves for ", player_color)
     inline_ply_moves, inline_opp_moves = generate_inline(player_color, matrix)
     sidestep_ply_moves = generate_sidestep(player_color, matrix)
 
@@ -95,7 +95,9 @@ def generate_inline(color, location_matrix):
     Generates inline moves (for 1, 2, or 3 marbles).
     :return:
     """
-    player = 1 if color[0] == 'w' else 2
+    # print(color)
+    player = 1 if color == 'w' else 2
+    # player = color
     locations = [(ix, iy) for ix, row in enumerate(location_matrix) for iy, i in enumerate(row) if i == player]
     opp_loc = [(ix, iy) for ix, row in enumerate(location_matrix) for iy, i in enumerate(row) if i != player and i != 0]
 
@@ -209,7 +211,7 @@ def generate_sidestep(color, location_matrix):
     :param location_matrix:
     :return:
     """
-    player = 1 if color[0] == 'w' else 2
+    player = 1 if color == 'w' else 2
 
     locations = [(ix, iy) for ix, row in enumerate(location_matrix) for iy, i in enumerate(row) if i == player]
     opp_loc = [(ix, iy) for ix, row in enumerate(location_matrix) for iy, i in enumerate(row) if i != player and i != 0]
@@ -260,16 +262,24 @@ def generate_sidestep(color, location_matrix):
                 new_chains = []
                 old_moves = []
                 if len(chain) > 2:
+
                     first_move = move(chain[0][0], chain[0][1])
                     second_move = move(chain[1][0], chain[1][1])
-                    if (-1, -1) not in [first_move, second_move] and first_move not in locations \
-                            and second_move not in locations and first_move not in opp_loc \
-                            and second_move not in opp_loc:
+                    third_move = move(chain[2][0], chain[2][1])
+                    if (-1, -1) not in [first_move, second_move, third_move] and first_move not in locations \
+                            and second_move not in locations and third_move not in locations \
+                            and first_move not in opp_loc \
+                            and second_move not in opp_loc and third_move not in opp_loc:
+
                         old_moves.append(coord_dict[chain[0]][0] + str(coord_dict[chain[0]][1]))
                         old_moves.append(coord_dict[chain[1]][0] + str(coord_dict[chain[1]][1]))
+                        old_moves.append(coord_dict[chain[2]][0] + str(coord_dict[chain[2]][1]))
                         new_chains.append(coord_dict[first_move][0] + str(coord_dict[first_move][1]))
                         new_chains.append(coord_dict[second_move][0] + str(coord_dict[second_move][1]))
+                        new_chains.append(coord_dict[third_move][0] + str(coord_dict[third_move][1]))
                         move_notation.append(("SS", old_moves, new_chains))
+
+
     return move_notation
 
 
@@ -472,12 +482,12 @@ def move_11(x, y):
 
 
 def main():
-    matrix, player_color = get_input("Test1.input")
+    matrix, player_color = get_input("Test2.input")
     resultDic = generate_moves(matrix, player_color)
     print("Inline", resultDic['inline_ply_moves'])
     print("SS", resultDic['sidestep_ply_moves'])
     print("Opposite moves", resultDic['inline_opp_moves'])
-    show_grid(matrix)
+    # show_grid(matrix)
 
 
 if __name__ == '__main__':
