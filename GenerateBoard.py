@@ -87,6 +87,9 @@ def push_okay(num_ally_marbles_move: int, board_coord_unchanged: [],
     if coordinate_behind_opponent_marble_1 in board_coord_unchanged:
         opp_marble_inline_count = opp_marble_inline_count + 1
         opponent_array_push.append(coordinate_behind_opponent_marble_1)
+    elif num_ally_marbles_move == 2:
+        opponent_start = opponent_array_push
+        return [alphabet_change, number_change, opponent_array_push]
 
     # determine if there's 3 opponent marbles inline against ally
     alphabet_behind_opponent_marble_2 = chr(ord(coordinate_behind_opponent_marble_1[0]) + alphabet_change)
@@ -139,33 +142,19 @@ def push_of_edge(opponent_marble_coordinate):
 
 
 def main():
-    print('INPUT\n')
-    board = readInputFile('Test1.input')['board']
-    print('\n')
-    # test regular SS
-    print('SS')
-    move_notation = ['SS', ['G4w', 'G5w'], ['F3w', 'F4w']]
-    result_dict = generate_result_board(move_notation, board)
-    print("Move notation:", move_notation, "\n new board:", result_dict['board'],
-          "\npushed opponent of edge: ", result_dict['isScore'])
+    # print('INPUT\n')
+    # board = readInputFile('Test1.input')['board']
+    # print('\n')
+    # # test push
+    # print('\nI(push)')
+    # move_notation = ['I', ['B4w', 'C5w'], ['A3w', 'B4w']]
+    # result_dict = generate_result_board(move_notation, board)
+    # print("Move notation:", move_notation, "\n new board:", result_dict['board'],
+    #       "\npushed opponent of edge: ", result_dict['isScore'])
 
-    # test regular inline
-    print('\nI(no push)')
-    move_notation = ['I', ['G4w', 'G5w'], ['G3w', 'G4w']]
-    result_dict = generate_result_board(move_notation, board)
-    print("Move notation:", move_notation, "\n new board:", result_dict['board'],
-          "\npushed opponent of edge: ", result_dict['isScore'])
-
-    # test push
-    print('\nI(push)')
-    move_notation = ['I', ['B4w', 'B5w', 'B6w'], ['B3w', 'B4w', 'B5w']]
-    result_dict = generate_result_board(move_notation, board)
-    print("Move notation:", move_notation, "\n new board:", result_dict['board'],
-          "\npushed opponent of edge: ", result_dict['isScore'])
-
-    # test push
-    print('\nI(push)')
-    move_notation = ['I', ['B4w', 'C5w'], ['A3w', 'B4w']]
+    board = ['I6w', 'I7w', 'I8w', 'I9w', 'H4w', 'H5w', 'H6w', 'H7w', 'H8w', 'H9w', 'G5w', 'G7w', 'F5w', 'E5w', 'D4b',
+             'C1b', 'C2b', 'C3b', 'C4b', 'C5b', 'B1b', 'B3b', 'B4b', 'B5b', 'B6b', 'A3b', 'A4b', 'A5b']
+    move_notation = ['I', ['D4b', 'C3b'], ['E5b', 'D4b']]
     result_dict = generate_result_board(move_notation, board)
     print("Move notation:", move_notation, "\n new board:", result_dict['board'],
           "\npushed opponent of edge: ", result_dict['isScore'])
