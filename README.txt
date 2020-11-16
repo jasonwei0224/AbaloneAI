@@ -1,15 +1,22 @@
-Please make sure that the module PySimpleGUI is installed
+To run:
 
-To test run gui.py on a python IDE or double click gui.py, when run a window will pop up showing game configurations
-Click start to proceed to the actual game board.
+Run gui.py and then if you select black as color then click submit AI Agent will run.
+For the white marbles move please see below:
+Please enter a move like the follow:
+I,I5w,H5w,H5w,G5w
 
-Actions to play, stop, pause, reset are listed in the Actions dropdown menu top lef of the window
-Player move history and player time history will be listed under History dropdown menu just lef to f Actions
+No space or quotes only comma separated values.
+Please enter move type first follow by starting coordinates and ending coordinates.
+You must include the color.
 
-To move the marbles do the following:
-Clear the input box
-Type in: G5 F5
-(Case sensitive!!)
-Click submit to see the marble at G5 move to F5
+Once you click submit and GUI updated click submit again to run the AI Game Agent
 
+If you select white as your color then please do the reverse of above:
+enter a move for the black marbles:
+I,B1b,C1b
 
+No space or quotes only comma separated values.
+Please enter move type first follow by starting coordinates and ending coordinates.
+You must include the color.
+
+Once you click submit and GUI updated click submit again to run the AI Game Agent
