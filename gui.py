@@ -240,14 +240,17 @@ elif event == 'Start':
                     player2_out,
                     selected_board,
                     player1_color,
-                    player2_color]
+                player2_color]
+
+                turn_color = "w" if player1_color == 1 else "b"
 
                 # call the game playing agent and get the board/move notation
                 if num_moves == 0:
-                    v, move = game_playing_agent.iterative_deepening(state_space, player1_color, 0,
+                    v, move = game_playing_agent.iterative_deepening(state_space, turn_color, 0,
                                                                      int(window['p1_time_limit'].Get()), True)
                 else:
-                    v, move = game_playing_agent.iterative_deepening(state_space, player1_color, 0, int(window['p1_time_limit'].Get()),False)
+                    v, move = game_playing_agent.iterative_deepening(state_space, turn_color, 0,
+                                                                     int(window['p1_time_limit'].Get()), False)
                     print(v, move)
                 text_board_format = translate_board_format_to_text(selected_board)
                 new_board = GenerateBoard.generate_result_board(move, text_board_format)  # get the updated board to be
