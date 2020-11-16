@@ -239,7 +239,8 @@ elif event == 'Start':
                     player1_out,
                     player2_out,
                     selected_board,
-                    player1_color]
+                    player1_color,
+                    player2_color]
 
                 # call the game playing agent and get the board/move notation
                 if num_moves == 0:
