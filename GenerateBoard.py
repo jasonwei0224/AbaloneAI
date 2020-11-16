@@ -87,7 +87,7 @@ def push_okay(num_ally_marbles_move: int, board_coord_unchanged: [],
     if coordinate_behind_opponent_marble_1 in board_coord_unchanged:
         opp_marble_inline_count = opp_marble_inline_count + 1
         opponent_array_push.append(coordinate_behind_opponent_marble_1)
-    elif num_ally_marbles_move == 2:
+    elif num_ally_marbles_move > 1:
         opponent_start = opponent_array_push
         return [alphabet_change, number_change, opponent_array_push]
 
