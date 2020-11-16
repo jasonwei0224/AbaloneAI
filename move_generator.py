@@ -1,6 +1,6 @@
 import constant
 import PySimpleGUI as sg
-import copy
+import numpy as np
 
 # import gui
 
@@ -31,17 +31,18 @@ coord_dict = {(0, 0): ["I", 5], (0, 1): ["I", 6], (0, 2): ["I", 7], (0, 3): ["I"
 def get_input(file_name):
     file = open(file_name, "r")
     player_color = file.readline()
-    # print(player_color)
+    print(player_color)
     locations = file.readline().split(',')
 
-    location_matrix = copy.deepcopy(constant.EMPTY_BOARD)
+    location_matrix = constant.EMPTY_BOARD
+
     for value in locations:
         row = constant.LOCATION_DICT[value[0]]
         col = int(value[1]) - constant.LETTER_AND_NUM_OFFSET[row][1]
         color = 1 if value[2] == 'w' else 2
         location_matrix[row][col] = color
 
-    return location_matrix, player_color[0]
+    return location_matrix, player_color
 
 
 def draw_board(canvas, matrix):
@@ -73,15 +74,14 @@ def draw_board(canvas, matrix):
                 (col * width + 20 + offset, row * width + 15), color="red")
 
 
-# def show_grid(location_matrix, ):
-#     graph_element = sg.Graph((600, 600), (0, 300), (300, 0), key='graph')
-#     window = sg.Window('Abalone', [[graph_element]], font=('arial', 15)).Finalize()
-#     draw_board(graph_element, location_matrix)
-#     event, values = window.read()
+def show_grid(location_matrix, ):
+    graph_element = sg.Graph((600, 600), (0, 300), (300, 0), key='graph')
+    window = sg.Window('Abalone', [[graph_element]], font=('arial', 15)).Finalize()
+    draw_board(graph_element, location_matrix)
+    event, values = window.read()
 
 
 def generate_moves(matrix, player_color):
-    # print("generating moves for ", player_color)
     inline_ply_moves, inline_opp_moves = generate_inline(player_color, matrix)
     sidestep_ply_moves = generate_sidestep(player_color, matrix)
 
@@ -95,9 +95,7 @@ def generate_inline(color, location_matrix):
     Generates inline moves (for 1, 2, or 3 marbles).
     :return:
     """
-    # print(color)
-    # player = 1 if color == 'w' else 2
-    player = color
+    player = 1 if color[0] == 'w' else 2
     locations = [(ix, iy) for ix, row in enumerate(location_matrix) for iy, i in enumerate(row) if i == player]
     opp_loc = [(ix, iy) for ix, row in enumerate(location_matrix) for iy, i in enumerate(row) if i != player and i != 0]
 
@@ -211,7 +209,7 @@ def generate_sidestep(color, location_matrix):
     :param location_matrix:
     :return:
     """
-    player = 1 if color == 'w' else 2
+    player = 1 if color[0] == 'w' else 2
 
     locations = [(ix, iy) for ix, row in enumerate(location_matrix) for iy, i in enumerate(row) if i == player]
     opp_loc = [(ix, iy) for ix, row in enumerate(location_matrix) for iy, i in enumerate(row) if i != player and i != 0]
@@ -479,7 +477,7 @@ def main():
     print("Inline", resultDic['inline_ply_moves'])
     print("SS", resultDic['sidestep_ply_moves'])
     print("Opposite moves", resultDic['inline_opp_moves'])
-    # show_grid(matrix)
+    show_grid(matrix)
 
 
 if __name__ == '__main__':
