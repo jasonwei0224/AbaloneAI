@@ -61,7 +61,7 @@ def main():
             file.write(result_board[-1])
             file.write("\n")
 
-    move_generator.show_grid(matrix)
+    # move_generator.show_grid(matrix)
 
 
 if __name__ == '__main__':
