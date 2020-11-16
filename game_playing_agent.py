@@ -1,5 +1,5 @@
 import sys
-from random import random
+import random
 
 import constant
 import datetime
@@ -63,13 +63,24 @@ def tanslate_move_notation_to_with_color(move_notation, location_matrix):
 
     return move_notation
 
-def print_calculation_detail():
-    pass
+
+# TODO: CONSCIENCE SEARCH
 
 # TODO: transposition table
 
 # TODO: implement Iterative deepening
-def iterative_deepening(state, color, start_time, time_limit):
+def iterative_deepening(state, color, start_time, time_limit, first_move):
+
+    if first_move:
+        moves = generate_moves(state[2], color)
+        moves = sort_moves(moves)
+        move_num = random.randint(0, len(moves)-1)
+        color_txt = ('w' if color == 1 else 'b')
+        for i in range(len(moves[move_num][1])):
+            moves[move_num][1][i] = moves[move_num][1][i] + color_txt
+            moves[move_num][2][i] = moves[move_num][2][i] + color_txt
+        print(moves[move_num])
+        return 0, moves[move_num]
 
     depth = 0
     val = -sys.maxsize - 1
@@ -85,7 +96,7 @@ def iterative_deepening(state, color, start_time, time_limit):
         if v >= val:
             val = v
             b = best_move
-        depth+=1
+        depth += 1
     return val, b
 
 
@@ -114,7 +125,7 @@ def max_value(state, alpha, beta, color, start_time, time_limit, depth, best_mov
     best_move = ""
     moves = generate_moves(state[2], color)
     sorted_moves = sort_moves(moves) # sorting the nodes
-    # print(sorted_moves)
+
     for m in sorted_moves:
 
         m_with_color = tanslate_move_notation_to_with_color(m, state[2])
@@ -208,8 +219,23 @@ def terminal_test(state):
 
 def eval(state):
     if(terminal_test(state)):
-        return 1000000000000 # return highest value
+        return sys.maxsize  # return highest value
     else:
-        return 10 * random()
+        user_edge, opponent_edge = getEdge(state[2], state[3])
+        value = state[0] * (-100) + state[1] * 100 + user_edge + opponent_edge
+
+        return value
     #TODO finish implemetning
     # the higher the number of enemy at edge and number of pushed off it should get more points
+
+def getEdge(matrix, color):
+    user_edge = 0
+    opponent_edge = 0
+    for row in range(len(matrix)):
+        for col in range(len(matrix[row])):
+            if row == 0 or row == 8 or col == 0 or col == len(matrix[row]) - 1:
+                if matrix[row][col] == color:
+                    user_edge +=1
+                elif matrix[row][col] != 0:
+                    opponent_edge +=1
+    return user_edge, opponent_edge
