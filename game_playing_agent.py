@@ -8,7 +8,7 @@ from GenerateBoard import generate_result_board
 from visualize_board import show_board
 import copy
 
-MAX_DEPTH = 1
+MAX_DEPTH = 3
 
 def text_to_matrix_board(text_board_format):
     location_matrix = copy.deepcopy(constant.EMPTY_BOARD)
@@ -85,28 +85,26 @@ def iterative_deepening(state, color, start_time, time_limit, first_move):
     depth = 0
     val = -sys.maxsize - 1
     b = ""
-    # while True:
+    while depth < MAX_DEPTH:
         # if depth >= MAX_DEPTH:
-        #     print('brea')
         #     break
         # start Time here
     #     current_time = datetime.datetime.now()
     #     if current_time>= time_limit:
     #         break
-    v, best_move = minimax(state, color, start_time, time_limit, depth)
-
-    if v >= val:
-        val = v
-        b = best_move
-    depth += 1
+        v, best_move = minimax(state, color, start_time, time_limit, depth)
+        if v >= val:
+            val = v
+            b = best_move
+        depth += 1
     return val, b
 
 
 
 def minimax(state, color, start_time, time_limit, depth):
 
-    v, best_move = max_value(state, -sys.maxsize, sys.maxsize, color, start_time, time_limit, depth, "")
-    return v, best_move
+    v = max_value(state, -sys.maxsize - 1, sys.maxsize - 1, color, start_time, time_limit, depth, "")
+    return v
 
 def max_value(state, alpha, beta, color, start_time, time_limit, depth, best_move):
     """
@@ -125,14 +123,13 @@ def max_value(state, alpha, beta, color, start_time, time_limit, depth, best_mov
         return eval(state), best_move
     # if datetime.datetime.now().second - start_time >= time_limit:
     #     return eval(state), best_move
-    v = -sys.maxsize
-    # best_move = ""
+    v = -sys.maxsize - 1
+    best_move = ""
     moves = generate_moves(state[2], color)
     sorted_moves = sort_moves(moves) # sorting the nodes
 
     for m in sorted_moves:
         m_with_color = tanslate_move_notation_to_with_color(m, state[2])
-
         user_num_out = state[0]
         txt_board = translate_board_format_to_text(state[2])
         print("text board: ",txt_board)
@@ -141,14 +138,12 @@ def max_value(state, alpha, beta, color, start_time, time_limit, depth, best_mov
         opp_num_out = ((state[1] + 1) if result_board['isScore'] else state[1])
         new_state = [user_num_out, opp_num_out, matrix_board, state[3], state[4]]
         print("The move: ", m_with_color, "\nprevious state: ", state[:2], "\ncurrent state after move: ", new_state[:2], "\nmarble pushed: ", result_board['isScore'], "board: ", matrix_board)
-        v = min_value(new_state, alpha, beta, (2 if color == 1 else 1) ,start_time, time_limit, depth+1, m_with_color)
-        print("new value: " ,v, "beta", beta, "alpha", alpha, "best", best_move)
-        # v = max(v, new_val)
+        new_val, best_move = min_value(new_state, alpha, beta, (2 if color == 1 else 1) ,start_time, time_limit, depth+1, m_with_color)
+        print("current value: ", v, "new value: " ,new_val)
+        v = max( v, new_val)
         if v > beta:
-            print('returning')
-            return v
+            return v, best_move
         alpha = max(alpha, v)
-        best_move = m
     return v, best_move
 
 
@@ -165,9 +160,9 @@ def min_value(state, alpha, beta, color, start_time, time_limit, depth, best_mov
     # best_move = ""
     print("\nmin", "Color is: " , color)
     if terminal_test(state):
-        return eval(state)
+        return eval(state), best_move
     if depth >= MAX_DEPTH:
-        return eval(state)
+        return eval(state), best_move
     # if datetime.datetime.now() - start_time >= time_limit:
     #     return eval(state), best_move
     v = sys.maxsize - 1
@@ -184,14 +179,13 @@ def min_value(state, alpha, beta, color, start_time, time_limit, depth, best_mov
         opp_num_out = ((state[0] + 1) if result_board['isScore'] else state[0])
         new_state = [user_num_out, opp_num_out, matrix_board,state[3], state[4]]
         print("The move: ", m_with_color, "\nprevious state: ", state[:2], "\ncurrent state after move: ", new_state[:2], "\nmarble pushed: ", result_board['isScore'], "board: ", matrix_board)
-        v = max_value(new_state, alpha, beta, (2 if color == 1 else 1), start_time, time_limit, depth +1, m_with_color)[0]
-        print("new value: " ,v, "beta", beta, "alpha", alpha)
-        # v = min(v, new_val)
-        if v <= alpha:
-            best_move = m
-            return v
+        new_val, best_move = max_value(new_state, alpha, beta, (2 if color == 1 else 1), start_time, time_limit, depth +1, m_with_color)
+        print("current value: ", v, "new value: " ,new_val)
+        v = min(v, new_val)
+        if v <= beta:
+            return v, best_move
         beta = min(beta, v)
-    return v
+    return v, best_move
 
 def sort_moves(moves):
     # Ordering of moves:
