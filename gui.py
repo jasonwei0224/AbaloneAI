@@ -361,7 +361,7 @@ elif event == 'Start':
                 window2['next_move'].update(get_move_detail([move_notation_no_color]))
                 if new_board['isScore']:
                     player2_out = + 1
-                    window2['p2_out'].update(str(player2_out)) # update points if pushed off
+                    window2['p2_out'].update("Player 1 Out: "+str(player2_out)) # update points if pushed off
 
                 draw_board(canvas, selected_board)
                 window2["p1_move"].update(window2["p1_move"].Get() + get_move_detail([move])) # show moves
@@ -382,7 +382,7 @@ elif event == 'Start':
                     window2['next_move'].update("Next Move: " + get_move_detail([move])) # display next move on screen
                     if new_board['isScore']:
                         player1_out =+ 1
-                        window2['p1_out'].update(str(player1_out))
+                        window2['p1_out'].update("Player 1 out: " + str(player1_out))
                     draw_board(canvas, selected_board) # update board on gui
                     window2["p2_move"].update(window2["p2_move"].Get() + get_move_detail([move])) # record move on screen
                     num_moves += 1 # update number of moves taken
