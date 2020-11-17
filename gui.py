@@ -170,12 +170,18 @@ def remove_color(moves):
         moves[2][i] = move[2][i][:-1]
     return moves
 
-def process_move_history(move_lst, turn):
-    print('current turn in move history ', turn, move_lst)
+def process_move_history(move_lst, turn, player1_color, player2_color):
+    # print('current turn in move history ', turn, move_lst)
     if turn == 2:
-        color_txt = 'b'
+        if player1_color == 2:
+            color_txt = 'b'
+        else:
+            color_txt = 'w'
     elif turn == 1:
-        color_txt = 'w'
+        if player1_color == 1:
+            color_txt = 'b'
+        else:
+            color_txt = 'w'
     temp = []
     types = []
     hist = []
@@ -218,8 +224,6 @@ def process_move_history(move_lst, turn):
         move_notation = [move_type, start, end]
         # print(move_notation)
     return move_notation
-
-
 
 window = sg.Window('Game Configuration', config_layout, font=('arial', 15))
 
@@ -282,17 +286,19 @@ elif event == 'Start':
 
     while True:
         # print(num_moves)
+        # print("Current Turn", turn)
         window2["num_of_moves"].update("Number of moves taken: " + str(num_moves) + " / " + str(max_moves))
         event, values = window2.read()
-        print("Current Turn", turn)
+
         if event == "Undo":
             if turn == 1:
-
+                # print("Current Turn in if turn == 1", turn)
+                turn_color = "w" if player1_color == 1 else "b"
                 move_lst = window2["p2_move"].Get().split(' ')
                 move_lst =  list(filter(lambda a: a != "=>" and a != '', move_lst))
-                print("p2 move list", move_lst)
-                last_move = process_move_history(move_lst, turn)
-                print(last_move)
+                # print("p2 move list", move_lst)
+                last_move = process_move_history(move_lst, turn, player1_color, player2_color)
+                # print(last_move)
                 text_board_format = translate_board_format_to_text(selected_board)
                 new_board = GenerateBoard.generate_result_board(last_move,
                                                                 text_board_format)  # get the updated board to be
@@ -300,14 +306,15 @@ elif event == 'Start':
                 draw_board(canvas, selected_board)  # update board on gui
                 num_moves -= 1  # update number of moves taken
                 window2["num_of_moves"].update("Number of moves taken: " + str(num_moves) + " / " + str(max_moves))
-                turn = 1 if turn == 2 else 2  # change turns
+                # turn = 1 if turn == 2 else 2  # change turns
 
             elif turn == 2:
+                # print("Current Turn in if turn == 2", turn)
                 move_lst = window2["p1_move"].Get().split(' ')
                 move_lst = list(filter(lambda a: a != "=>" and a != '', move_lst))
                 # print(move_lst)
-                last_move = process_move_history(move_lst, turn)
-                print(last_move)
+                last_move = process_move_history(move_lst, turn, player1_color, player2_color)
+                # print(last_move)
                 text_board_format = translate_board_format_to_text(selected_board)
                 new_board = GenerateBoard.generate_result_board(last_move, text_board_format)  # get the updated board to be
                 selected_board = text_to_matrix_board(new_board['board'])  # translate to matrix notation
@@ -315,7 +322,7 @@ elif event == 'Start':
                 num_moves -= 1  # update number of moves taken
                 window2["num_of_moves"].update("Number of moves taken: " + str(num_moves) + " / " + str(max_moves))
 
-                turn = 1 if turn == 2 else 2  # change turns
+            turn = 1 if turn == 2 else 2  # change turns
         elif event == "Stop":
             pass
         elif event == "Pause":
