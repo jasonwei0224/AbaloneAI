@@ -164,6 +164,67 @@ def get_move_detail(moves):
             dest += coordinate + " "
         return(moves[i][0] + ": " + str(origin) + " => " + str(dest))
 
+def remove_color(moves):
+    for i in range(len(moves[1])):
+        moves[1][i] = move[1][i][:-1]
+        moves[2][i] = move[2][i][:-1]
+    return moves
+
+def process_move_history(move_lst, turn, player1_color, player2_color):
+    # print('current turn in move history ', turn, move_lst)
+    if turn == 2:
+        if player1_color == 2:
+            color_txt = 'b'
+        else:
+            color_txt = 'w'
+    elif turn == 1:
+        if player1_color == 1:
+            color_txt = 'b'
+        else:
+            color_txt = 'w'
+    temp = []
+    types = []
+    hist = []
+    # i = 0
+    for i in move_lst:
+        if '\n' in i:
+            types.append(i)
+            hist.append(temp)
+            temp=[]
+        else:
+            temp.append(i)
+    hist.remove([])
+
+    types.pop(-1)
+    move_type = types[-1].replace('\n', '')
+    move_type = move_type.replace(':', '')
+    move_notation = ''
+    if len(hist[-1]) == 2:
+        end = hist[-1][:1]
+        start = hist[-1][1:]
+        for i in range(len(end)):
+            end[i] += color_txt
+            start[i] += color_txt
+        move_notation = [move_type, start, end]
+        # print(move_notation)
+    elif len(hist[-1]) == 4:
+        end = hist[-1][:2]
+        start = hist[-1][2:]
+        for i in range(len(end)):
+            end[i] += color_txt
+            start[i] += color_txt
+        move_notation = [move_type, start, end]
+        # print(move_notation)
+    elif len(hist[-1]) == 6:
+        end = hist[-1][:3]
+        start = hist[-1][3:]
+        for i in range(len(end)):
+            end[i] += color_txt
+            start[i] += color_txt
+        move_notation = [move_type, start, end]
+        # print(move_notation)
+    return move_notation
+
 window = sg.Window('Game Configuration', config_layout, font=('arial', 15))
 
 event, values = window.read()
@@ -225,10 +286,50 @@ elif event == 'Start':
 
     while True:
         # print(num_moves)
+        # print("Current Turn", turn)
         window2["num_of_moves"].update("Number of moves taken: " + str(num_moves) + " / " + str(max_moves))
         event, values = window2.read()
 
-        if event == "Submit":
+        if event == "Undo":
+            if turn == 1:
+                # print("Current Turn in if turn == 1", turn)
+                turn_color = "w" if player1_color == 1 else "b"
+                move_lst = window2["p2_move"].Get().split(' ')
+                move_lst =  list(filter(lambda a: a != "=>" and a != '', move_lst))
+                # print("p2 move list", move_lst)
+                last_move = process_move_history(move_lst, turn, player1_color, player2_color)
+                # print(last_move)
+                text_board_format = translate_board_format_to_text(selected_board)
+                new_board = GenerateBoard.generate_result_board(last_move,
+                                                                text_board_format)  # get the updated board to be
+                selected_board = text_to_matrix_board(new_board['board'])  # translate to matrix notation
+                draw_board(canvas, selected_board)  # update board on gui
+                num_moves -= 1  # update number of moves taken
+                window2["num_of_moves"].update("Number of moves taken: " + str(num_moves) + " / " + str(max_moves))
+                # turn = 1 if turn == 2 else 2  # change turns
+
+            elif turn == 2:
+                # print("Current Turn in if turn == 2", turn)
+                move_lst = window2["p1_move"].Get().split(' ')
+                move_lst = list(filter(lambda a: a != "=>" and a != '', move_lst))
+                # print(move_lst)
+                last_move = process_move_history(move_lst, turn, player1_color, player2_color)
+                # print(last_move)
+                text_board_format = translate_board_format_to_text(selected_board)
+                new_board = GenerateBoard.generate_result_board(last_move, text_board_format)  # get the updated board to be
+                selected_board = text_to_matrix_board(new_board['board'])  # translate to matrix notation
+                draw_board(canvas, selected_board)  # update board on gui
+                num_moves -= 1  # update number of moves taken
+                window2["num_of_moves"].update("Number of moves taken: " + str(num_moves) + " / " + str(max_moves))
+
+            turn = 1 if turn == 2 else 2  # change turns
+        elif event == "Stop":
+            pass
+        elif event == "Pause":
+            pass
+        elif event == "Play":
+            pass
+        elif event == "Submit":
             move = window2['move'].Get()  # Get the move that user input
 
             if turn == 1:
@@ -245,9 +346,10 @@ elif event == 'Start':
                 turn_color = "w" if player1_color == 1 else "b"
 
                 # call the game playing agent and get the board/move notation
-                if num_moves == 0:
+                if num_moves == 0 or num_moves == 1:
                     v, move = game_playing_agent.iterative_deepening(state_space, turn_color, 0,
                                                                      int(window['p1_time_limit'].Get()), True)
+                    print('num', v, move)
                 else:
                     v, move = game_playing_agent.iterative_deepening(state_space, turn_color, 0,
                                                                      int(window['p1_time_limit'].Get()), False)
@@ -259,33 +361,33 @@ elif event == 'Start':
                 window2['next_move'].update(get_move_detail([move_notation_no_color]))
                 if new_board['isScore']:
                     player2_out = + 1
-                    window2['p2_out'].update(str(player2_out)) # update points if pushed off
+                    window2['p2_out'].update("Player 1 Out: "+str(player2_out)) # update points if pushed off
 
                 draw_board(canvas, selected_board)
                 window2["p1_move"].update(window2["p1_move"].Get() + get_move_detail([move])) # show moves
                 num_moves += 1  # update number of moves taken
                 window2["num_of_moves"].update("Number of moves taken: " + str(num_moves) + " / " + str(max_moves)) # update on gui
-                turn = 2 if 1 else 1 # change turns
+                turn = 2 if turn == 1 else 1 # change turns
 
             else:
                 if validate_input(move):
                     # OPPONENT INPUT: Type, coordinates no space
-
                     move = translate_move(move)
-                    print(move)
+
                     text_board_format = translate_board_format_to_text(selected_board)
                     new_board = GenerateBoard.generate_result_board(move, text_board_format) # get the updated board to be
                     selected_board = text_to_matrix_board(new_board['board'])  # translate to matrix notation
-
+                    move = remove_color(move)
+                    print(move)
                     window2['next_move'].update("Next Move: " + get_move_detail([move])) # display next move on screen
                     if new_board['isScore']:
                         player1_out =+ 1
-                        window2['p1_out'].update(str(player1_out))
+                        window2['p1_out'].update("Player 1 out: " + str(player1_out))
                     draw_board(canvas, selected_board) # update board on gui
                     window2["p2_move"].update(window2["p2_move"].Get() + get_move_detail([move])) # record move on screen
                     num_moves += 1 # update number of moves taken
                     window2["num_of_moves"].update("Number of moves taken: " + str(num_moves) + " / " + str(max_moves))
-                    turn = 1 if 2 else 2 # change turns
+                    turn = 1 if turn == 2 else 2 # change turns
 
 
         elif event == sg.WIN_CLOSED or event == 'Exit':

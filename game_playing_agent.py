@@ -77,26 +77,26 @@ def iterative_deepening(state, color, start_time, time_limit, first_move):
         move_num = random.randint(0, len(moves)-1)
         color_txt = ('w' if color == 1 else 'b')
         for i in range(len(moves[move_num][1])):
-            moves[move_num][1][i] = moves[move_num][1][i] + color_txt
-            moves[move_num][2][i] = moves[move_num][2][i] + color_txt
+            moves[move_num][1][i] = moves[move_num][1][i] + color
+            moves[move_num][2][i] = moves[move_num][2][i] + color
 
         return 0, moves[move_num]
 
     depth = 0
     val = -sys.maxsize - 1
     b = ""
-    while depth < MAX_DEPTH:
+    # while depth < MAX_DEPTH:
         # if depth >= MAX_DEPTH:
         #     break
         # start Time here
     #     current_time = datetime.datetime.now()
     #     if current_time>= time_limit:
     #         break
-        v, best_move = minimax(state, color, start_time, time_limit, depth)
-        if v >= val:
-            val = v
-            b = best_move
-        depth += 1
+    v, best_move = minimax(state, color, start_time, time_limit, depth)
+    if v >= val:
+        val = v
+        b = best_move
+    depth += 1
     return val, b
 
 
@@ -116,6 +116,7 @@ def max_value(state, alpha, beta, color, start_time, time_limit, depth, best_mov
     :param time_limit:
     :return:
     """
+    i = 0
     print('\nmax', "Color is: " , color)
     if terminal_test(state):
         return eval(state), best_move
@@ -129,6 +130,8 @@ def max_value(state, alpha, beta, color, start_time, time_limit, depth, best_mov
     sorted_moves = sort_moves(moves) # sorting the nodes
 
     for m in sorted_moves:
+        i+=1
+        print(i)
         m_with_color = tanslate_move_notation_to_with_color(m, state[2])
         user_num_out = state[0]
         txt_board = translate_board_format_to_text(state[2])
@@ -138,12 +141,16 @@ def max_value(state, alpha, beta, color, start_time, time_limit, depth, best_mov
         opp_num_out = ((state[1] + 1) if result_board['isScore'] else state[1])
         new_state = [user_num_out, opp_num_out, matrix_board, state[3], state[4]]
         print("The move: ", m_with_color, "\nprevious state: ", state[:2], "\ncurrent state after move: ", new_state[:2], "\nmarble pushed: ", result_board['isScore'], "board: ", matrix_board)
-        new_val, best_move = min_value(new_state, alpha, beta, (2 if color == 1 else 1) ,start_time, time_limit, depth+1, m_with_color)
-        print("current value: ", v, "new value: " ,new_val)
+        # new_val, best_move = min_value(new_state, alpha, beta, (2 if color == 1 else 1) ,start_time, time_limit, depth+1, m_with_color)
+        new_val = min_value(new_state, alpha, beta, (2 if color == 1 else 1), start_time, time_limit,
+                                       depth + 1, m_with_color)
+        print("current value: ", v, "new value: " ,new_val, "alpha", alpha, "beta", beta)
         v = max( v, new_val)
         if v > beta:
             return v, best_move
         alpha = max(alpha, v)
+
+        best_move = m
     return v, best_move
 
 
@@ -160,9 +167,9 @@ def min_value(state, alpha, beta, color, start_time, time_limit, depth, best_mov
     # best_move = ""
     print("\nmin", "Color is: " , color)
     if terminal_test(state):
-        return eval(state), best_move
+        return eval(state) #best_move
     if depth >= MAX_DEPTH:
-        return eval(state), best_move
+        return eval(state) #best_move
     # if datetime.datetime.now() - start_time >= time_limit:
     #     return eval(state), best_move
     v = sys.maxsize - 1
@@ -179,13 +186,16 @@ def min_value(state, alpha, beta, color, start_time, time_limit, depth, best_mov
         opp_num_out = ((state[0] + 1) if result_board['isScore'] else state[0])
         new_state = [user_num_out, opp_num_out, matrix_board,state[3], state[4]]
         print("The move: ", m_with_color, "\nprevious state: ", state[:2], "\ncurrent state after move: ", new_state[:2], "\nmarble pushed: ", result_board['isScore'], "board: ", matrix_board)
-        new_val, best_move = max_value(new_state, alpha, beta, (2 if color == 1 else 1), start_time, time_limit, depth +1, m_with_color)
-        print("current value: ", v, "new value: " ,new_val)
-        v = min(v, new_val)
-        if v <= beta:
-            return v, best_move
+        # new_val, best_move = max_value(new_state, alpha, beta, (2 if color == 1 else 1), start_time, time_limit, depth +1, m_with_color)
+        v = max_value(new_state, alpha, beta, (2 if color == 1 else 1), start_time, time_limit,
+                                       depth + 1, m_with_color)[0]
+        # print("current value: ", v, "new value: " ,new_val, "alpha", alpha, "beta", beta)
+        # v = min(v, new_val)
+        if v <= alpha:
+            return v #best_move
+
         beta = min(beta, v)
-    return v, best_move
+    return v #best_move
 
 def sort_moves(moves):
     # Ordering of moves:
@@ -211,7 +221,7 @@ def sort_moves(moves):
         elif m[0] == 'SS' and len(m[1]) == 3:
             side_step_three.append(m)
 
-    sorted_moves = inline_three + inline_two + side_step_three + side_step_two + single
+    sorted_moves = single + side_step_two + side_step_three + inline_two + inline_three
     return sorted_moves
 
 def terminal_test(state):
@@ -234,7 +244,7 @@ def eval(state):
         return -sys.maxsize
     else:
         user_edge, opponent_edge = getEdge(state[2], state[3])
-        value = state[0] * (-100) + state[1] * 100 + user_edge * (-50) + opponent_edge * 50
+        value = (state[0] * (-100) + state[1] * 100 + user_edge * (-50) + opponent_edge * 50) * random.randint(1,10000)
 
         return value
     #TODO finish implemetning
