@@ -8,6 +8,8 @@ from GenerateBoard import generate_result_board
 from visualize_board import show_board
 import copy
 
+import score
+
 MAX_DEPTH = 3
 
 def text_to_matrix_board(text_board_format):
@@ -118,17 +120,26 @@ def max_value(state, alpha, beta, color, start_time, time_limit, depth, best_mov
     """
     print('\nmax', "Color is: " , color)
     if terminal_test(state):
-        return eval(state), best_move
+        # ======================= CHANGE BACK LATER ======================
+        # return eval(state), best_move
+        return score.eval_h(state, color), best_move
     if depth >= MAX_DEPTH:
-        return eval(state), best_move
+        # ======================= CHANGE BACK LATER ======================
+        # return eval(state), best_move
+        return score.eval_h(state, color), best_move
     # if datetime.datetime.now().second - start_time >= time_limit:
     #     return eval(state), best_move
     v = -sys.maxsize - 1
     best_move = ""
     moves = generate_moves(state[2], color)
-    sorted_moves = sort_moves(moves) # sorting the nodes
+    sorted_moves_arr = sort_moves(moves) # sorting the nodes
+    with open("Max_Move_notations.txt", 'w', encoding='utf-8') as file:
+        for move_notation in moves['inline_ply_moves']:
+            file.write("'{}', {} => {}\n".format(move_notation[0], move_notation[1], move_notation[2]))
+        for move_notation in moves['sidestep_ply_moves']:
+            file.write("'{}', {} => {}\n".format(move_notation[0], move_notation[1], move_notation[2]))
 
-    for m in sorted_moves:
+    for m in sorted_moves_arr:
         m_with_color = tanslate_move_notation_to_with_color(m, state[2])
         user_num_out = state[0]
         txt_board = translate_board_format_to_text(state[2])
@@ -160,16 +171,27 @@ def min_value(state, alpha, beta, color, start_time, time_limit, depth, best_mov
     # best_move = ""
     print("\nmin", "Color is: " , color)
     if terminal_test(state):
-        return eval(state), best_move
+        # ======================= CHANGE BACK LATER ======================
+        # return eval(state), best_move
+        return score.eval_h(state, color), best_move
     if depth >= MAX_DEPTH:
-        return eval(state), best_move
+        # ======================= CHANGE BACK LATER ======================
+        # return eval(state), best_move
+        return score.eval_h(state, color), best_move
     # if datetime.datetime.now() - start_time >= time_limit:
     #     return eval(state), best_move
     v = sys.maxsize - 1
     best_move = ""
     moves = generate_moves(state[2], color)
-    sorted_moves = sort_moves(moves)  # sorting the nodes
-    for m in sorted_moves:
+
+    with open("Min_Move_notations.txt", 'w', encoding='utf-8') as file:
+        for move_notation in moves['inline_ply_moves']:
+            file.write("'{}', {} => {}\n".format(move_notation[0], move_notation[1], move_notation[2]))
+        for move_notation in moves['sidestep_ply_moves']:
+            file.write("'{}', {} => {}\n".format(move_notation[0], move_notation[1], move_notation[2]))
+
+    sorted_moves_arr = sort_moves(moves)  # sorting the nodes
+    for m in sorted_moves_arr:
         m_with_color = tanslate_move_notation_to_with_color(m, state[2])
         user_num_out = state[1]
         txt_board = translate_board_format_to_text(state[2])
@@ -211,8 +233,12 @@ def sort_moves(moves):
         elif m[0] == 'SS' and len(m[1]) == 3:
             side_step_three.append(m)
 
-    sorted_moves = inline_three + inline_two + side_step_three + side_step_two + single
-    return sorted_moves
+    sorted_moves_arr = inline_three + inline_two + side_step_three + side_step_two + single
+    with open("MiniMax_sorted_move_notations.txt", 'w', encoding='utf-8') as file:
+        for item in sorted_moves_arr:
+            file.write("'{}', {} => {}\n".format(item[0], item[1], item[2]))
+
+    return sorted_moves_arr
 
 def terminal_test(state):
     # check if opponent has 6 marbles out

@@ -18,6 +18,8 @@ def main():
 
     # generate board
     board = GenerateBoard.readInputFile("Test" + str(test_number) + ".input")['board']
+    if board is None:
+        pass
     for move_notation in move_dict['inline_ply_moves']:
         move_notation_for_board = [move_notation[0]]
         start_coords = []
