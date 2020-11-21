@@ -244,7 +244,7 @@ def eval(state):
         return -sys.maxsize
     else:
         user_edge, opponent_edge = getEdge(state[2], state[3])
-        value = (state[0] * (-100) + state[1] * 100 + user_edge * (-50) + opponent_edge * 50) * random.randint(1,10000)
+        value = (state[0] * (-100) + state[1] * 100 + user_edge * (-50) + opponent_edge * 50)  * random.randint(1,10000)
 
         return value
     #TODO finish implemetning
