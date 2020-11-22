@@ -369,7 +369,8 @@ elif event == 'Start':
                         player2_out,
                         selected_board,
                         player1_color,
-                    player2_color]
+                        player2_color,
+                        []] # attacks on opp
 
                     turn_color = "w" if player1_color == 1 else "b"
 
@@ -409,7 +410,9 @@ elif event == 'Start':
                         print("move without color" ,move)
                         window2['next_move'].update("Next Move: " + get_move_detail([move])) # display next move on screen
                         if new_board['isScore']:
-                            player1_out =+ 1
+                            print('add ')
+                            player1_out += 1
+                            print(player1_out)
                             window2['p1_out'].update("Player 1 out: " + str(player1_out))
                         draw_board(canvas, selected_board) # update board on gui
                         window2["p2_move"].update(window2["p2_move"].Get() + get_move_detail([move])) # record move on screen

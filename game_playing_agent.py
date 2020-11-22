@@ -1,3 +1,4 @@
+import math
 import sys
 import random
 
@@ -139,7 +140,7 @@ def max_value(state, alpha, beta, color, start_time, time_limit, depth, best_mov
         result_board = generate_result_board(m_with_color, txt_board)
         matrix_board = text_to_matrix_board(result_board['board'])
         opp_num_out = ((state[1] + 1) if result_board['isScore'] else state[1])
-        new_state = [user_num_out, opp_num_out, matrix_board, state[3], state[4]]
+        new_state = [user_num_out, opp_num_out, matrix_board, state[3], state[4], moves['inline_opp_moves']]
         print("The move: ", m_with_color, "\nprevious state: ", state[:2], "\ncurrent state after move: ", new_state[:2], "\nmarble pushed: ", result_board['isScore'], "board: ", matrix_board)
         # new_val, best_move = min_value(new_state, alpha, beta, (2 if color == 1 else 1) ,start_time, time_limit, depth+1, m_with_color)
         new_val = min_value(new_state, alpha, beta, (2 if color == 1 else 1), start_time, time_limit,
@@ -184,7 +185,7 @@ def min_value(state, alpha, beta, color, start_time, time_limit, depth, best_mov
         result_board = generate_result_board(m_with_color, txt_board)
         matrix_board = text_to_matrix_board(result_board['board'])
         opp_num_out = ((state[0] + 1) if result_board['isScore'] else state[0])
-        new_state = [user_num_out, opp_num_out, matrix_board,state[3], state[4]]
+        new_state = [user_num_out, opp_num_out, matrix_board,state[3], state[4], moves['inline_opp_moves']]
         print("The move: ", m_with_color, "\nprevious state: ", state[:2], "\ncurrent state after move: ", new_state[:2], "\nmarble pushed: ", result_board['isScore'], "board: ", matrix_board)
         # new_val, best_move = max_value(new_state, alpha, beta, (2 if color == 1 else 1), start_time, time_limit, depth +1, m_with_color)
         v = max_value(new_state, alpha, beta, (2 if color == 1 else 1), start_time, time_limit,
@@ -243,14 +244,46 @@ def eval(state):
     elif state[1] == 6:
         return -sys.maxsize
     else:
-        user_edge, opponent_edge = getEdge(state[2], state[3])
-        value = (state[0] * (-100) + state[1] * 100 + user_edge * (-50) + opponent_edge * 50)  * random.randint(1,10000)
+        user_edge, opponent_edge = get_edge(state[2], state[3])
+        value = state[0] * (-5000) + \
+                state[1] * 1000 + \
+                user_edge * (-500) + \
+                opponent_edge * 500 + \
+                -(distance_from_centre(state[2], state[3])) * 1000 + \
+                len(state[5]) * 300 + \
+                calculate_push_off(state[5]) * 100
+
 
         return value
-    #TODO finish implemetning
-    # the higher the number of enemy at edge and number of pushed off it should get more points
+def calculate_push_off(opp_move):
+    count = 0
+    for m in opp_move:
+        if m[2] == [] or m[2][-1] == '':
+            count +=1
+    return count
 
-def getEdge(matrix, color):
+def calculate_center(row, col):
+    center_x = 4
+    center_y = 4
+    dist = (row - center_y) ** 2 + (col - center_x) ** 2
+    dist = math.sqrt(dist)
+    return dist
+
+def distance_from_centre(matrix, color):
+    player = 0
+    opponent = 0
+    for row in range(len(matrix)):
+        for col in range(len(matrix[row])):
+            if matrix[row][col] != 0:
+                if matrix[row][col] == color:
+                    player += calculate_center(row, col)
+                else:
+                    opponent += calculate_center(row, col)
+
+    return player - opponent
+
+
+def get_edge(matrix, color):
     user_edge = 0
     opponent_edge = 0
     for row in range(len(matrix)):
@@ -261,3 +294,23 @@ def getEdge(matrix, color):
                 elif matrix[row][col] != 0:
                     opponent_edge +=1
     return user_edge, opponent_edge
+
+# def get_grouping(location_matrix, adjacent_marble, adj_lst, direction, color, user_lst, opp_lst, count_user,
+#                     count_opp):
+#
+#     if count_user > 3:
+#         return
+#     row = notation_to_coordinates(adjacent_marble)[0]
+#     col = notation_to_coordinates(adjacent_marble)[1]
+#
+#     if location_matrix[row][col] == 0:
+#         if count_user > count_opp and count_user >= 1:
+#             return count_user, direction
+#
+#     elif adjacent_marble in opp_lst:
+#         return get_grouping(location_matrix, adjacent_marble, adj_lst, direction, color, user_lst, opp_lst, count_user,
+#                                count_opp + 1)
+#
+#     elif adjacent_marble in user_lst:
+#         return get_grouping(location_matrix, adjacent_marble, adj_lst, direction, color,
+#                                user_lst, opp_lst, count_user + 1, count_opp)
