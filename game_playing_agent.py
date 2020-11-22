@@ -3,6 +3,7 @@ import random
 
 import constant
 import datetime
+import time
 from move_generator import generate_moves
 from GenerateBoard import generate_result_board
 from visualize_board import show_board
@@ -100,6 +101,7 @@ def iterative_deepening(state, color, start_time, time_limit, first_move):
     #     current_time = datetime.datetime.now()
     #     if current_time>= time_limit:
     #         break
+    start_time = time.perf_counter()
     v, best_move = minimax(state, color, start_time, time_limit, depth)
     if v >= val:
         val = v
@@ -131,8 +133,8 @@ def max_value(state, alpha, beta, color, start_time, time_limit, depth, best_mov
         return eval(state), best_move
         # return score.eval_h(state, color), best_move
 
-    # if datetime.datetime.now().second - start_time >= time_limit:
-    #     return eval(state), best_move
+    if (time.perf_counter() - start_time) >= time_limit:
+        return eval(state), best_move
     v = -sys.maxsize - 1
     best_move = ""
     moves = generate_moves(state[2], color)
@@ -188,17 +190,17 @@ def min_value(state, alpha, beta, color, start_time, time_limit, depth, best_mov
         return eval(state)  # best_move
     if depth >= MAX_DEPTH:
         return eval(state)  # best_move
-    # if datetime.datetime.now() - start_time >= time_limit:
-    #     return eval(state), best_move
+    if (time.perf_counter() - start_time) >= time_limit:
+        return eval(state), best_move
     v = sys.maxsize - 1
     best_move = ""
     moves = generate_moves(state[2], color)
 
-    with open("Min_Move_notations.txt", 'w', encoding='utf-8') as file:
-        for move_notation in moves['inline_ply_moves']:
-            file.write("'{}', {} => {}\n".format(move_notation[0], move_notation[1], move_notation[2]))
-        for move_notation in moves['sidestep_ply_moves']:
-            file.write("'{}', {} => {}\n".format(move_notation[0], move_notation[1], move_notation[2]))
+    # with open("Min_Move_notations.txt", 'w', encoding='utf-8') as file:
+    #     for move_notation in moves['inline_ply_moves']:
+    #         file.write("'{}', {} => {}\n".format(move_notation[0], move_notation[1], move_notation[2]))
+    #     for move_notation in moves['sidestep_ply_moves']:
+    #         file.write("'{}', {} => {}\n".format(move_notation[0], move_notation[1], move_notation[2]))
 
     sorted_moves_arr = sort_moves(moves)  # sorting the nodes
     for m in sorted_moves_arr:
