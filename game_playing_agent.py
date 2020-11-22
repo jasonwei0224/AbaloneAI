@@ -218,7 +218,7 @@ def min_value(state, alpha, beta, color, start_time, time_limit, depth, best_mov
         v = max_value(new_state, alpha, beta, (2 if color == 1 else 1), start_time, time_limit,
                       depth + 1, m_with_color)[0]
         # print("current value: ", v, "new value: " ,new_val, "alpha", alpha, "beta", beta)
-        # v = min(v, new_val)
+        # v = min(v, new_val[0])
         if v <= alpha:
             return v  # best_move
 
@@ -278,7 +278,7 @@ def eval(state):
         return -sys.maxsize
     else:
         user_edge, opponent_edge = getEdge(state[2], state[3])
-        value = (state[0] * (-100) + state[1] * 100 + user_edge * (-50) + opponent_edge * 50) * random.randint(1, 10000)
+        value = (state[0] * (-100) + state[1] * 100 + user_edge * (-50) + opponent_edge * 50)  * random.randint(1,10000)
 
         return value
     # TODO finish implemetning
