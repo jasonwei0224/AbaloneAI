@@ -1,15 +1,13 @@
+import math
 import sys
 import random
 
 import constant
-import datetime
 import time
 from move_generator import generate_moves
 from GenerateBoard import generate_result_board
 from visualize_board import show_board
 import copy
-
-import score
 
 MAX_DEPTH = 3
 
@@ -102,17 +100,18 @@ def iterative_deepening(state, color, start_time, time_limit, first_move):
     #     if current_time>= time_limit:
     #         break
     start_time = time.perf_counter()
-    v, best_move = minimax(state, color, start_time, time_limit, depth)
+    v, best_move, time_taken = minimax(state, color, start_time, time_limit, depth)
     if v >= val:
         val = v
         b = best_move
     depth += 1
-    return val, b
+    return val, b, time_taken
 
 
 def minimax(state, color, start_time, time_limit, depth):
     v = max_value(state, -sys.maxsize - 1, sys.maxsize - 1, color, start_time, time_limit, depth, "")
     return v
+
 
 def max_value(state, alpha, beta, color, start_time, time_limit, depth, best_move):
     """
@@ -126,25 +125,16 @@ def max_value(state, alpha, beta, color, start_time, time_limit, depth, best_mov
     """
     i = 0
     print('\nmax', "Color is: ", color)
+    time_taken = time.perf_counter() - start_time
     if terminal_test(state):
-        return eval(state), best_move
-        # return score.eval_h(state, color), best_move
+        return eval(state), best_move, time_taken
     if depth >= MAX_DEPTH:
-        return eval(state), best_move
-        # return score.eval_h(state, color), best_move
-
-    if (time.perf_counter() - start_time) >= time_limit:
-        return eval(state), best_move
+        return eval(state), best_move, time_taken
+    if time_taken >= time_limit:
+        return eval(state), best_move, time_taken
     v = -sys.maxsize - 1
     best_move = ""
     moves = generate_moves(state[2], color)
-
-    # with open("Max_Move_notations.txt", 'w', encoding='utf-8') as file:
-    #     for move_notation in moves['inline_ply_moves']:
-    #         file.write("'{}', {} => {}\n".format(move_notation[0], move_notation[1], move_notation[2]))
-    #     for move_notation in moves['sidestep_ply_moves']:
-    #         file.write("'{}', {} => {}\n".format(move_notation[0], move_notation[1], move_notation[2]))
-
     sorted_moves = sort_moves(moves)  # sorting the nodes
 
     for m in sorted_moves:
@@ -157,21 +147,22 @@ def max_value(state, alpha, beta, color, start_time, time_limit, depth, best_mov
         result_board = generate_result_board(m_with_color, txt_board)
         matrix_board = text_to_matrix_board(result_board['board'])
         opp_num_out = ((state[1] + 1) if result_board['isScore'] else state[1])
-        new_state = [user_num_out, opp_num_out, matrix_board, state[3], state[4]]
+        new_state = [user_num_out, opp_num_out, matrix_board, state[3], state[4], moves['inline_opp_moves']]
         print("The move: ", m_with_color, "\nprevious state: ", state[:2], "\ncurrent state after move: ",
               new_state[:2], "\nmarble pushed: ", result_board['isScore'], "board: ", matrix_board)
-        # new_val, best_move = min_value(new_state, alpha, beta, (2 if color == 1 else 1) ,start_time, time_limit,
-        # depth+1, m_with_color)
-        new_val = min_value(new_state, alpha, beta, (2 if color == 1 else 1), start_time, time_limit,
-                            depth + 1, m_with_color)
+        # new_val, best_move = min_value(new_state, alpha, beta, (2 if color == 1 else 1) ,start_time, time_limit, depth+1, m_with_color)
+        new_val, time_taken = min_value(new_state, alpha, beta, (2 if color == 1 else 1), start_time, time_limit,
+                                        depth + 1, m_with_color)
         print("current value: ", v, "new value: ", new_val, "alpha", alpha, "beta", beta)
+        if type(new_val) is tuple:
+            new_val = new_val[0]
         v = max(v, new_val)
         if v > beta:
-            return v, best_move
+            return v, best_move, time_taken
         alpha = max(alpha, v)
 
         best_move = m
-    return v, best_move
+    return v, best_move, time_taken
 
 
 def min_value(state, alpha, beta, color, start_time, time_limit, depth, best_move):
@@ -186,24 +177,19 @@ def min_value(state, alpha, beta, color, start_time, time_limit, depth, best_mov
     """
     # best_move = ""
     print("\nmin", "Color is: ", color)
+    time_taken = time.perf_counter() - start_time
+
     if terminal_test(state):
-        return eval(state)  # best_move
+        return eval(state), time_taken  # best_move
     if depth >= MAX_DEPTH:
-        return eval(state)  # best_move
-    if (time.perf_counter() - start_time) >= time_limit:
-        return eval(state), best_move
+        return eval(state), time_taken  # best_move
+    if time_taken >= time_limit:
+        return eval(state), time_taken
     v = sys.maxsize - 1
     best_move = ""
     moves = generate_moves(state[2], color)
-
-    # with open("Min_Move_notations.txt", 'w', encoding='utf-8') as file:
-    #     for move_notation in moves['inline_ply_moves']:
-    #         file.write("'{}', {} => {}\n".format(move_notation[0], move_notation[1], move_notation[2]))
-    #     for move_notation in moves['sidestep_ply_moves']:
-    #         file.write("'{}', {} => {}\n".format(move_notation[0], move_notation[1], move_notation[2]))
-
-    sorted_moves_arr = sort_moves(moves)  # sorting the nodes
-    for m in sorted_moves_arr:
+    sorted_moves = sort_moves(moves)  # sorting the nodes
+    for m in sorted_moves:
         m_with_color = tanslate_move_notation_to_with_color(m, state[2])
         user_num_out = state[1]
         txt_board = translate_board_format_to_text(state[2])
@@ -211,19 +197,19 @@ def min_value(state, alpha, beta, color, start_time, time_limit, depth, best_mov
         result_board = generate_result_board(m_with_color, txt_board)
         matrix_board = text_to_matrix_board(result_board['board'])
         opp_num_out = ((state[0] + 1) if result_board['isScore'] else state[0])
-        new_state = [user_num_out, opp_num_out, matrix_board, state[3], state[4]]
+        new_state = [user_num_out, opp_num_out, matrix_board, state[3], state[4], moves['inline_opp_moves']]
         print("The move: ", m_with_color, "\nprevious state: ", state[:2], "\ncurrent state after move: ",
               new_state[:2], "\nmarble pushed: ", result_board['isScore'], "board: ", matrix_board)
         # new_val, best_move = max_value(new_state, alpha, beta, (2 if color == 1 else 1), start_time, time_limit, depth +1, m_with_color)
         v = max_value(new_state, alpha, beta, (2 if color == 1 else 1), start_time, time_limit,
                       depth + 1, m_with_color)[0]
         # print("current value: ", v, "new value: " ,new_val, "alpha", alpha, "beta", beta)
-        # v = min(v, new_val[0])
+        # v = min(v, new_val)
         if v <= alpha:
-            return v  # best_move
+            return v, time_taken  # best_move
 
         beta = min(beta, v)
-    return v  # best_move
+    return v, time_taken  # best_move
 
 
 def sort_moves(moves):
@@ -251,9 +237,6 @@ def sort_moves(moves):
             side_step_three.append(m)
 
     sorted_moves = single + side_step_two + side_step_three + inline_two + inline_three
-    # with open("MiniMax_sorted_move_notations.txt", 'w', encoding='utf-8') as file:
-    #     for item in sorted_moves:
-    #         file.write("'{}', {} => {}\n".format(item[0], item[1], item[2]))
     return sorted_moves
 
 
@@ -277,15 +260,49 @@ def eval(state):
     elif state[1] == 6:
         return -sys.maxsize
     else:
-        user_edge, opponent_edge = getEdge(state[2], state[3])
-        value = (state[0] * (-100) + state[1] * 100 + user_edge * (-50) + opponent_edge * 50)  * random.randint(1,10000)
+        user_edge, opponent_edge = get_edge(state[2], state[3])
+        value = state[0] * (-5000) + \
+                state[1] * 1000 + \
+                user_edge * (-500) + \
+                opponent_edge * 500 + \
+                -(distance_from_centre(state[2], state[3])) * 1000 + \
+                len(state[5]) * 300 + \
+                calculate_push_off(state[5]) * 100
 
         return value
-    # TODO finish implemetning
-    # the higher the number of enemy at edge and number of pushed off it should get more points
 
 
-def getEdge(matrix, color):
+def calculate_push_off(opp_move):
+    count = 0
+    for m in opp_move:
+        if m[2] == [] or m[2][-1] == '':
+            count += 1
+    return count
+
+
+def calculate_center(row, col):
+    center_x = 4
+    center_y = 4
+    dist = (row - center_y) ** 2 + (col - center_x) ** 2
+    dist = math.sqrt(dist)
+    return dist
+
+
+def distance_from_centre(matrix, color):
+    player = 0
+    opponent = 0
+    for row in range(len(matrix)):
+        for col in range(len(matrix[row])):
+            if matrix[row][col] != 0:
+                if matrix[row][col] == color:
+                    player += calculate_center(row, col)
+                else:
+                    opponent += calculate_center(row, col)
+
+    return player - opponent
+
+
+def get_edge(matrix, color):
     user_edge = 0
     opponent_edge = 0
     for row in range(len(matrix)):
@@ -296,3 +313,23 @@ def getEdge(matrix, color):
                 elif matrix[row][col] != 0:
                     opponent_edge += 1
     return user_edge, opponent_edge
+
+# def get_grouping(location_matrix, adjacent_marble, adj_lst, direction, color, user_lst, opp_lst, count_user,
+#                     count_opp):
+#
+#     if count_user > 3:
+#         return
+#     row = notation_to_coordinates(adjacent_marble)[0]
+#     col = notation_to_coordinates(adjacent_marble)[1]
+#
+#     if location_matrix[row][col] == 0:
+#         if count_user > count_opp and count_user >= 1:
+#             return count_user, direction
+#
+#     elif adjacent_marble in opp_lst:
+#         return get_grouping(location_matrix, adjacent_marble, adj_lst, direction, color, user_lst, opp_lst, count_user,
+#                                count_opp + 1)
+#
+#     elif adjacent_marble in user_lst:
+#         return get_grouping(location_matrix, adjacent_marble, adj_lst, direction, color,
+#                                user_lst, opp_lst, count_user + 1, count_opp)
