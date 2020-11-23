@@ -57,11 +57,11 @@ def generate_game_info_layout(player1_color, player2_color):
                          sg.Text('Player 1 color: ' + ("White" if player1_color == 1 else "Black"))],
                         [sg.Text('Player 2 Out: 0', key = "p2_out"),
                          sg.Text('Player 2 color: ' + ("Black" if player2_color == 2 else "White"))],
-                        [sg.Text('Time Taken by Player 1:   ', key="time_p1")],
-                        [sg.Text('Time Taken by Player 2:  ')],
+                        [sg.Text('Time taken by Player 1:   ', size=(60,1), key="time_p1")],
+                        [sg.Text('Time taken by Player 2:  ')],
                         [sg.VerticalSeparator(pad=((0, 0), (10, 20)))],
-                        [sg.Text('Moves Taken by Player 1:   ', pad=((0, 50), (0, 0)), key='p1_move_limit'),
-                         sg.Text('Moves Taken by Player 2: ', key='p2_move_limit')],
+                        [sg.Text('Moves taken by Player 1:   ', pad=((0, 50), (0, 0)), key='p1_move_limit'),
+                         sg.Text('Moves taken by Player 2: ', key='p2_move_limit')],
                         [sg.Multiline('', size=(25, 10), key="p1_move"),
                          sg.Multiline('', size=(25, 10), key="p2_move")],
                         ]
@@ -378,13 +378,20 @@ elif event == 'Start':
 
                     # call the game playing agent and get the board/move notation
                     if num_moves == 0:
-                        v, move = game_playing_agent.iterative_deepening(state_space, turn_color, 0,
+                        v, move, time = game_playing_agent.iterative_deepening(state_space, turn_color, 0,
                                                                          int(window['p1_time_limit'].Get()), True)
-                        print('num', v, move)
+
+                        agent_time += time
+                        print('num', v, move, time, agent_time, str(agent_time))
+
+                        window2["time_p1"].update("Time taken by player 1: " + str(agent_time))
                     else:
-                        v, move, agent_time = game_playing_agent.iterative_deepening(state_space, turn_color, 0,
+                        v, move, time = game_playing_agent.iterative_deepening(state_space, turn_color, 0,
                                                                          int(window['p1_time_limit'].Get()), False)
-                        print(v, move, agent_time)
+                        print(v, move, time)
+                        agent_time += time
+                        window2["time_p1"].update("Time taken by player 1: " + str(agent_time))
+
                     text_board_format = translate_board_format_to_text(selected_board)
                     new_board = GenerateBoard.generate_result_board(move, text_board_format)  # get the updated board to be
                     selected_board = text_to_matrix_board(new_board['board'])
@@ -398,6 +405,7 @@ elif event == 'Start':
                     window2["p1_move"].update(window2["p1_move"].Get() + get_move_detail([move])) # show moves
                     num_moves += 1  # update number of moves taken
                     window2["num_of_moves"].update("Number of moves taken: " + str(num_moves) + " / " + str(max_moves)) # update on gui
+                    # window2["time_p1"].update("Time taken by player 1: " + str(agent_time))
                     turn = 2 if turn == 1 else 1 # change turns
 
                 else:
