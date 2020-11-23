@@ -388,7 +388,6 @@ elif event == 'Start':
 
                 if turn == 1:
 
-                    # TODO: CALL AI GAME AGENT HERE
                     # current state space to be passed into game playing agent
                     state_space = [
                         player1_out,
