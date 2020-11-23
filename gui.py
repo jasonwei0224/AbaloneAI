@@ -240,15 +240,19 @@ event, values = window.read()
 if event == "Exit":
     window.close()
 elif event == 'Start':
-
+    board_type = ""
     # Get the initial board layout
     if window["Standard"].Get():
+        board_type = "Standard"
         selected_board = copy.deepcopy(constant.DEFAULT_BOARD)
     elif window["German Daisy"].Get():
+        board_type = "German Daisy"
         selected_board = copy.deepcopy(constant.GERMAN_BOARD)
     elif window["Belgian Daisy"].Get():
+        board_type = "Belgian Daisy"
         selected_board = copy.deepcopy(constant.BELGIAN_BOARD)
     else:
+        board_type = "Standard"
         selected_board = copy.deepcopy(constant.DEFAULT_BOARD)
 
     # Get the player color
@@ -354,7 +358,27 @@ elif event == 'Start':
 
                     turn = 1 if turn == 2 else 2  # change turns
             elif event == "Stop":
-                pass
+                turn = 1 if player1_color == 2 else 2
+                player1_out = 0
+                player2_out = 0
+                num_moves = 0
+                total_time = 0
+                agent_time = 0
+                if board_type == "Standard":
+                    selected_board = copy.deepcopy(constant.DEFAULT_BOARD)
+                elif board_type == "German Daisy":
+                    selected_board = copy.deepcopy(constant.GERMAN_BOARD)
+                elif board_type == "Belgian Daisy":
+                    selected_board = copy.deepcopy(constant.BELGIAN_BOARD)
+                else:
+                    selected_board = copy.deepcopy(constant.DEFAULT_BOARD)
+                draw_board(canvas, selected_board)
+                window2["num_of_moves"].update("Number of moves taken: " + str(num_moves) + " / " + str(max_moves))
+                window2['p1_out'].update("Player 1 out: " + str(player1_out))
+                window2['p2_out'].update("Player 1 Out: " + str(player2_out))
+                window2["time_p1"].update("Time taken by player 1: " + str(agent_time))
+                window2["p1_move"].update('')
+                window2["p2_move"].update('')
             elif event == "Pause":
                 pass
             elif event == "Play":

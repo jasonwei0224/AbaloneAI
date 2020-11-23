@@ -5,11 +5,12 @@ import random
 import constant
 import time
 from move_generator import generate_moves
+from move_generator import get_all_locations
 from GenerateBoard import generate_result_board
 from visualize_board import show_board
 import copy
 
-MAX_DEPTH = 3
+MAX_DEPTH = 100
 
 
 def text_to_matrix_board(text_board_format):
@@ -224,6 +225,12 @@ def sort_moves(moves):
     side_step_two = []
     side_step_three = []
     single = []
+
+    inline_edge = []
+    inline_middle = []
+    side_step_edge_to_middle = []
+    side_step_middle = []
+
     for m in moves['inline_ply_moves']:
         if m[0] == 'I' and len(m[1]) == 1:
             single.append(m)
@@ -237,7 +244,22 @@ def sort_moves(moves):
         elif m[0] == 'SS' and len(m[1]) == 3:
             side_step_three.append(m)
 
-    sorted_moves = single + side_step_two + side_step_three + inline_two + inline_three
+    for i in inline_three:
+        if i[1][0] in constant.EDGE and i[1][0] in constant.EDGE and  i[1][0] in constant.EDGE and \
+                i[2][0] in constant.EDGE and i[2][0] in constant.EDGE and i[2][0] in constant.EDGE:
+            inline_edge.append((i))
+        else:
+            inline_middle.append(i)
+
+    for i in side_step_three:
+        if i[1][0] in constant.EDGE or i[1][0] in constant.EDGE or  i[1][0] in constant.EDGE :
+            side_step_edge_to_middle.append(i)
+        else:
+            side_step_middle.append(i)
+
+    sorted_moves = single + side_step_two + inline_two +\
+                   side_step_middle + inline_edge + side_step_edge_to_middle + inline_middle
+
     return sorted_moves
 
 
@@ -253,6 +275,7 @@ def eval(state):
     """
 
     :param state:
+
     :return:
     """
 
@@ -262,13 +285,20 @@ def eval(state):
         return -sys.maxsize
     else:
         user_edge, opponent_edge = get_edge(state[2], state[3])
-        value = state[0] * (-5000) + \
-                state[1] * 2000 + \
-                user_edge * (-50) + \
-                opponent_edge * 50 + \
-                -(distance_from_centre(state[2], state[3])) * 1000 + \
-                len(state[5]) * 1000 + \
-                calculate_push_off(state[5]) * 2000
+        # number of player marbles out
+        # number of opponent marbles out
+        # number of player marbles on edge
+        # number of opponent marbles on edge
+        # number of pushes available
+        # number of pushes that result opponent gets pushed off
+        value = state[0] * (-5) + \
+                state[1] * 2 + \
+                user_edge * (-2) + \
+                opponent_edge * 5 + \
+                -(distance_from_centre(state[2], state[3])) * 30 + \
+                len(state[5]) * 20 + \
+                calculate_push_off(state[5]) * 10
+
 
         return value
 
@@ -282,11 +312,11 @@ def calculate_push_off(opp_move):
 
 
 def calculate_center(row, col):
-    center_x = 4
+    center_x = 3
     center_y = 4
     dist = (row - center_y) ** 2 + (col - center_x) ** 2
     dist = math.sqrt(dist)
-    return dist
+    return int(dist)
 
 
 def distance_from_centre(matrix, color):
@@ -300,12 +330,13 @@ def distance_from_centre(matrix, color):
                 else:
                     opponent += calculate_center(row, col)
 
-    return player - opponent
+    return player
 
 
 def get_edge(matrix, color):
     user_edge = 0
     opponent_edge = 0
+
     for row in range(len(matrix)):
         for col in range(len(matrix[row])):
             if row == 0 or row == 8 or col == 0 or col == len(matrix[row]) - 1:
@@ -314,6 +345,9 @@ def get_edge(matrix, color):
                 elif matrix[row][col] != 0:
                     opponent_edge += 1
     return user_edge, opponent_edge
+
+def defence(user_edge_lst):
+    pass
 
 # def get_grouping(location_matrix, adjacent_marble, adj_lst, direction, color, user_lst, opp_lst, count_user,
 #                     count_opp):
