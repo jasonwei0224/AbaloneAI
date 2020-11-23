@@ -246,12 +246,12 @@ def eval(state):
     else:
         user_edge, opponent_edge = get_edge(state[2], state[3])
         value = state[0] * (-5000) + \
-                state[1] * 1000 + \
-                user_edge * (-500) + \
-                opponent_edge * 500 + \
+                state[1] * 2000 + \
+                user_edge * (-50) + \
+                opponent_edge * 50 + \
                 -(distance_from_centre(state[2], state[3])) * 1000 + \
-                len(state[5]) * 300 + \
-                calculate_push_off(state[5]) * 100
+                len(state[5]) * 1000 + \
+                calculate_push_off(state[5]) * 2000
 
 
         return value

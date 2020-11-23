@@ -56,7 +56,7 @@ def generate_game_info_layout(player1_color, player2_color):
                          sg.Text('Player 1 color: ' + ("White" if player1_color == 1 else "Black"))],
                         [sg.Text('Player 2 Out: 0', key = "p2_out"),
                          sg.Text('Player 2 color: ' + ("Black" if player2_color == 2 else "White"))],
-                        [sg.Text('Time Taken by Player 1:   ')],
+                        [sg.Text('Time Taken by Player 1:   ', key="time_p1")],
                         [sg.Text('Time Taken by Player 2:  ')],
                         [sg.VerticalSeparator(pad=((0, 0), (10, 20)))],
                         [sg.Text('Moves Taken by Player 1:   ', pad=((0, 50), (0, 0)), key='p1_move_limit'),
