@@ -78,6 +78,7 @@ def tanslate_move_notation_to_with_color(move_notation, location_matrix):
 
 # TODO: implement Iterative deepening
 def iterative_deepening(state, color, start_time, time_limit, first_move):
+    start_time = time.perf_counter()
     if first_move:
         moves = generate_moves(state[2], color)
         moves = sort_moves(moves)
@@ -87,7 +88,7 @@ def iterative_deepening(state, color, start_time, time_limit, first_move):
             moves[move_num][1][i] = moves[move_num][1][i] + color
             moves[move_num][2][i] = moves[move_num][2][i] + color
 
-        return 0, moves[move_num]
+        return 0, moves[move_num], time.perf_counter() - start_time
 
     depth = 0
     val = -sys.maxsize - 1
@@ -99,7 +100,7 @@ def iterative_deepening(state, color, start_time, time_limit, first_move):
     #     current_time = datetime.datetime.now()
     #     if current_time>= time_limit:
     #         break
-    start_time = time.perf_counter()
+
     v, best_move, time_taken = minimax(state, color, start_time, time_limit, depth)
     if v >= val:
         val = v
@@ -262,12 +263,12 @@ def eval(state):
     else:
         user_edge, opponent_edge = get_edge(state[2], state[3])
         value = state[0] * (-5000) + \
-                state[1] * 1000 + \
-                user_edge * (-500) + \
-                opponent_edge * 500 + \
+                state[1] * 2000 + \
+                user_edge * (-50) + \
+                opponent_edge * 50 + \
                 -(distance_from_centre(state[2], state[3])) * 1000 + \
-                len(state[5]) * 300 + \
-                calculate_push_off(state[5]) * 100
+                len(state[5]) * 1000 + \
+                calculate_push_off(state[5]) * 2000
 
         return value
 
