@@ -3,6 +3,7 @@ import constant
 import GenerateBoard
 import game_playing_agent
 import copy
+import traceback
 from GenerateBoard import generate_result_board
 
 # List of options for user to choose from
@@ -290,7 +291,8 @@ elif event == 'Start':
     player2_out = 0
     state_space = [player1_out, player2_out, selected_board]
     num_moves = 0
-
+    total_time = 0
+    agent_time = 0
     while True:
         # print(num_moves)
         # print("Current Turn", turn)
@@ -380,9 +382,9 @@ elif event == 'Start':
                                                                          int(window['p1_time_limit'].Get()), True)
                         print('num', v, move)
                     else:
-                        v, move = game_playing_agent.iterative_deepening(state_space, turn_color, 0,
+                        v, move, agent_time = game_playing_agent.iterative_deepening(state_space, turn_color, 0,
                                                                          int(window['p1_time_limit'].Get()), False)
-                        print(v, move)
+                        print(v, move, agent_time)
                     text_board_format = translate_board_format_to_text(selected_board)
                     new_board = GenerateBoard.generate_result_board(move, text_board_format)  # get the updated board to be
                     selected_board = text_to_matrix_board(new_board['board'])
@@ -426,4 +428,6 @@ elif event == 'Start':
                 break
         except:
             print('error try again')
+            print(traceback.format_exc())
+
             continue
