@@ -5,7 +5,6 @@ import random
 import constant
 import time
 from move_generator import generate_moves
-from move_generator import get_all_locations
 from GenerateBoard import generate_result_board
 from visualize_board import show_board
 import copy
