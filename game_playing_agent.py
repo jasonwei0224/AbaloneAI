@@ -8,7 +8,7 @@ from move_generator import generate_moves
 from GenerateBoard import generate_result_board
 from visualize_board import show_board
 import copy
-
+import score
 MAX_DEPTH = 3
 
 
@@ -128,11 +128,11 @@ def max_value(state, alpha, beta, color, start_time, time_limit, depth, best_mov
     print('\nmax', "Color is: ", color)
     time_taken = time.perf_counter() - start_time
     if terminal_test(state):
-        return eval(state), best_move, time_taken
+        return score.eval_h(state, color), best_move, time_taken
     if depth >= MAX_DEPTH:
-        return eval(state), best_move, time_taken
+        return score.eval_h(state, color), best_move, time_taken
     if time_taken >= time_limit:
-        return eval(state), best_move, time_taken
+        return score.eval_h(state, color), best_move, time_taken
     v = -sys.maxsize - 1
     best_move = ""
     moves = generate_moves(state[2], color)
@@ -181,11 +181,11 @@ def min_value(state, alpha, beta, color, start_time, time_limit, depth, best_mov
     time_taken = time.perf_counter() - start_time
 
     if terminal_test(state):
-        return eval(state), time_taken  # best_move
+        return score.eval_h(state, color), time_taken  # best_move
     if depth >= MAX_DEPTH:
-        return eval(state), time_taken  # best_move
+        return score.eval_h(state, color), time_taken  # best_move
     if time_taken >= time_limit:
-        return eval(state), time_taken
+        return score.eval_h(state, color), time_taken
     v = sys.maxsize - 1
     best_move = ""
     moves = generate_moves(state[2], color)
