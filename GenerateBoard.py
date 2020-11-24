@@ -23,10 +23,10 @@ def generate_result_board(move_notation: [], board_info: []):
         for dest_coord in dest_coords:
             # check and perform push, else regular update if no enemy marble in dest_coords
             if dest_coord[0:2] in [result_coord[0:2] for result_coord in result_board]:
-                if dest_coord[2] == 'w':
-                    opponent_color = 'b'
+                if dest_coord[2] == 'W':
+                    opponent_color = 'B'
                 else:
-                    opponent_color = 'w'
+                    opponent_color = 'W'
                 opponent_marble_against = dest_coord[0:2] + opponent_color
                 opp_move_array = push_okay(len(start_coords),
                                            result_board,
@@ -53,7 +53,7 @@ def generate_result_board(move_notation: [], board_info: []):
                 # regular update
                 result_board.append(dest_coord)
 
-    sorted_board = sorted(result_board, key=lambda cell: (0 if cell[2] == 'b' else 1, cell[0], cell[1]))
+    sorted_board = sorted(result_board, key=lambda cell: (0 if cell[2] == 'B' else 1, cell[0], cell[1]))
     result_dict['board'] = sorted_board
     return result_dict
 
@@ -142,24 +142,24 @@ def push_of_edge(opponent_marble_coordinate):
     return False
 
 
-def main():
-    # print('INPUT\n')
-    # board = readInputFile('Test1.input')['board']
-    # print('\n')
-    # # test push
-    # print('\nI(push)')
-    # move_notation = ['I', ['B4w', 'C5w'], ['A3w', 'B4w']]
-    # result_dict = generate_result_board(move_notation, board)
-    # print("Move notation:", move_notation, "\n new board:", result_dict['board'],
-    #       "\npushed opponent of edge: ", result_dict['isScore'])
-
-    board = ['I6w', 'I7w', 'I8w', 'I9w', 'H4w', 'H5w', 'H6w', 'H7w', 'H8w', 'H9w', 'G5w', 'G7w', 'F5w', 'E5w', 'D4b',
-             'C1b', 'C2b', 'C3b', 'C4b', 'C5b', 'B1b', 'B3b', 'B4b', 'B5b', 'B6b', 'A3b', 'A4b', 'A5b']
-    move_notation = ['I', ['D4b', 'C3b'], ['E5b', 'D4b']]
-    result_dict = generate_result_board(move_notation, board)
-    print("Move notation:", move_notation, "\n new board:", result_dict['board'],
-          "\npushed opponent of edge: ", result_dict['isScore'])
-
-
-if __name__ == '__main__':
-    main()
+# def main():
+#     # print('INPUT\n')
+#     # board = readInputFile('Test1.input')['board']
+#     # print('\n')
+#     # # test push
+#     # print('\nI(push)')
+#     # move_notation = ['I', ['B4w', 'C5w'], ['A3w', 'B4w']]
+#     # result_dict = generate_result_board(move_notation, board)
+#     # print("Move notation:", move_notation, "\n new board:", result_dict['board'],
+#     #       "\npushed opponent of edge: ", result_dict['isScore'])
+#
+#     board = ['I6W', 'I7w', 'I8w', 'I9w', 'H4w', 'H5w', 'H6w', 'H7w', 'H8w', 'H9w', 'G5w', 'G7w', 'F5w', 'E5w', 'D4b',
+#              'C1b', 'C2b', 'C3b', 'C4b', 'C5b', 'B1b', 'B3b', 'B4b', 'B5b', 'B6b', 'A3b', 'A4b', 'A5b']
+#     move_notation = ['I', ['D4b', 'C3b'], ['E5b', 'D4b']]
+#     result_dict = generate_result_board(move_notation, board)
+#     print("Move notation:", move_notation, "\n new board:", result_dict['board'],
+#           "\npushed opponent of edge: ", result_dict['isScore'])
+#
+#
+# if __name__ == '__main__':
+#     main()
