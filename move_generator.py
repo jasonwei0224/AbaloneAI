@@ -96,7 +96,7 @@ def generate_inline(color, location_matrix):
     :return:
     """
     # print(color)
-    player = 1 if color == 'W' else 2
+    player = 1 if color == 'w' else 2
     # player = color
     print(player)
     locations = [(ix, iy) for ix, row in enumerate(location_matrix) for iy, i in enumerate(row) if i == player]
@@ -214,7 +214,7 @@ def generate_sidestep(color, location_matrix):
     :param location_matrix:
     :return:
     """
-    player = 1 if color == 'W' else 2
+    player = 1 if color == 'w' else 2
 
     locations = [(ix, iy) for ix, row in enumerate(location_matrix) for iy, i in enumerate(row) if i == player]
     opp_loc = [(ix, iy) for ix, row in enumerate(location_matrix) for iy, i in enumerate(row) if i != player and i != 0]
