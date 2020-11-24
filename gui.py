@@ -109,7 +109,7 @@ def validate_input(move_str):
     return True
 
 def translate_move(move_str):
-    move_lst = move_str.split(",")
+    move_lst = move_str.split(" ")
     move = ""
     if len(move_lst[1:]) == 6:
         move = (move_lst[0], (move_lst[1:4]), (move_lst[4:]))
@@ -138,7 +138,7 @@ def text_to_matrix_board(text_board_format):
     for value in text_board_format:
         row = constant.LOCATION_DICT[value[0]]
         col = int(value[1]) - constant.LETTER_AND_NUM_OFFSET[row][1]
-        location_matrix[row][col] = 1 if value[2] == 'w' else 2
+        location_matrix[row][col] = 1 if value[2] == 'W' else 2
     return location_matrix
 
 def translate_board_format_to_text(selected_board):
@@ -146,7 +146,7 @@ def translate_board_format_to_text(selected_board):
     for row in range(len(selected_board)):
         for col in range(len(selected_board[row])):
             if selected_board[row][col] == 1 or selected_board[row][col] == 2:
-                text_board_format.append(coordinates_to_notation(row, col) + ("b" if selected_board[row][col] == 2 else 'w'))
+                text_board_format.append(coordinates_to_notation(row, col) + ("B" if selected_board[row][col] == 2 else 'W'))
 
     return text_board_format
 
@@ -175,14 +175,14 @@ def process_move_history(move_lst, turn, player1_color, player2_color):
     # print('current turn in move history ', turn, move_lst)
     if turn == 2:
         if player1_color == 2:
-            color_txt = 'b'
+            color_txt = 'B'
         else:
-            color_txt = 'w'
+            color_txt = 'W'
     elif turn == 1:
         if player1_color == 1:
-            color_txt = 'b'
+            color_txt = 'B'
         else:
-            color_txt = 'w'
+            color_txt = 'W'
 
 
     types = move_lst.pop(0)
@@ -397,7 +397,7 @@ elif event == 'Start':
                         player2_color,
                         []] # attacks on opp
 
-                    turn_color = "w" if player1_color == 1 else "b"
+                    turn_color = "W" if player1_color == 1 else "B"
 
                     # call the game playing agent and get the board/move notation
                     if num_moves == 0:
@@ -405,13 +405,13 @@ elif event == 'Start':
                                                                          int(window['p1_time_limit'].Get()), True)
 
                         agent_time += time
-                        print('num', v, move, time, agent_time, str(agent_time))
+                        # print('num', v, move, time, agent_time, str(agent_time))
 
                         window2["time_p1"].update("Time taken by player 1: " + str(agent_time))
                     else:
                         v, move, time = game_playing_agent.iterative_deepening(state_space, turn_color, 0,
                                                                          int(window['p1_time_limit'].Get()), False)
-                        print(v, move, time)
+                        # print(v, move, time)
                         agent_time += time
                         window2["time_p1"].update("Time taken by player 1: " + str(agent_time))
 
@@ -435,17 +435,17 @@ elif event == 'Start':
                     if validate_input(move):
                         # OPPONENT INPUT: Type, coordinates no space
                         move = translate_move(move)
-                        print("move with color", move)
+                        # print("move with color", move)
                         text_board_format = translate_board_format_to_text(selected_board)
                         new_board = GenerateBoard.generate_result_board(move, text_board_format) # get the updated board to be
                         selected_board = text_to_matrix_board(new_board['board'])  # translate to matrix notation
                         move = remove_color(move)
-                        print("move without color" ,move)
+                        # print("move without color" ,move)
                         window2['next_move'].update("Next Move: " + get_move_detail([move])) # display next move on screen
                         if new_board['isScore']:
-                            print('add ')
+                            # print('add ')
                             player1_out += 1
-                            print(player1_out)
+                            # print(player1_out)
                             window2['p1_out'].update("Player 1 out: " + str(player1_out))
                         draw_board(canvas, selected_board) # update board on gui
                         window2["p2_move"].update(window2["p2_move"].Get() + get_move_detail([move])) # record move on screen

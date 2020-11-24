@@ -33,7 +33,7 @@ def translate_board_format_to_text(selected_board):
         for col in range(len(selected_board[row])):
             if selected_board[row][col] == 1 or selected_board[row][col] == 2:
                 text_board_format.append(
-                    coordinates_to_notation(row, col) + ("b" if selected_board[row][col] == 2 else 'w'))
+                    coordinates_to_notation(row, col) + ("B" if selected_board[row][col] == 2 else 'W'))
 
     return text_board_format
 
@@ -62,18 +62,18 @@ def tanslate_move_notation_to_with_color(move_notation, location_matrix):
     for i in range(len(move_notation[1])):
         if location_matrix[notation_to_coordinates(move_notation[1][i])[0]][
             notation_to_coordinates(move_notation[1][i])[1]] == 1:
-            if move_notation[1][i][-1] == 'w' and move_notation[2][i][-1] == 'w':
+            if move_notation[1][i][-1] == 'W' and move_notation[2][i][-1] == 'W':
                 pass
             else:
-                move_notation[1][i] = move_notation[1][i] + 'w'
-                move_notation[2][i] = move_notation[2][i] + 'w'
+                move_notation[1][i] = move_notation[1][i] + 'W'
+                move_notation[2][i] = move_notation[2][i] + 'W'
         if location_matrix[notation_to_coordinates(move_notation[1][i])[0]][
             notation_to_coordinates(move_notation[1][i])[1]] == 2:
-            if move_notation[1][i][-1] == 'b' and move_notation[2][i][-1] == 'b':
+            if move_notation[1][i][-1] == 'B' and move_notation[2][i][-1] == 'B':
                 pass
             else:
-                move_notation[1][i] = move_notation[1][i] + 'b'
-                move_notation[2][i] = move_notation[2][i] + 'b'
+                move_notation[1][i] = move_notation[1][i] + 'B'
+                move_notation[2][i] = move_notation[2][i] + 'B'
 
     return move_notation
 
@@ -89,7 +89,7 @@ def iterative_deepening(state, color, start_time, time_limit, first_move):
         moves = generate_moves(state[2], color)
         moves = sort_moves(moves, state, color)
         move_num = random.randint(0, len(moves) - 1)
-        color_txt = ('w' if color == 1 else 'b')
+        color_txt = ('W' if color == 1 else 'B')
         for i in range(len(moves[move_num][1])):
             moves[move_num][1][i] = moves[move_num][1][i] + color
             moves[move_num][2][i] = moves[move_num][2][i] + color
@@ -146,12 +146,12 @@ def max_value(state, alpha, beta, color, start_time, time_limit, depth, best_mov
     print("sorted", sorted_moves)
     for m in sorted_moves:
         i += 1
-        print(i)
-        print("sorted", sorted_moves, "moves", m)
+        # print(i)
+        # print("sorted", sorted_moves, "moves", m)
         m_with_color = tanslate_move_notation_to_with_color(m, state[2])
         user_num_out = state[0]
         txt_board = translate_board_format_to_text(state[2])
-        print("text board: ", txt_board, "move", m_with_color)
+        # print("text board: ", txt_board, "move", m_with_color)
         result_board = generate_result_board(m_with_color, txt_board)
         matrix_board = text_to_matrix_board(result_board['board'])
         opp_num_out = ((state[1] + 1) if result_board['isScore'] else state[1])
@@ -199,11 +199,11 @@ def min_value(state, alpha, beta, color, start_time, time_limit, depth, best_mov
     sorted_moves = sort_moves(moves, state, color)  # sorting the nodes
     print("sorted", sorted_moves)
     for m in sorted_moves:
-        print("sorted", sorted_moves, "moves", m)
+        # print("sorted", sorted_moves, "moves", m)
         m_with_color = tanslate_move_notation_to_with_color(m, state[2])
         user_num_out = state[1]
         txt_board = translate_board_format_to_text(state[2])
-        print("text board: ", txt_board, "move", m_with_color)
+        # print("text board: ", txt_board, "move", m_with_color)
         result_board = generate_result_board(m_with_color, txt_board)
         matrix_board = text_to_matrix_board(result_board['board'])
         opp_num_out = ((state[0] + 1) if result_board['isScore'] else state[0])
@@ -256,10 +256,10 @@ def sort_moves(moves, state, color):
     for m in moves['inline_opp_moves']:
          if '' in m[2]:
              # if the  '' is in the destination then opponent is being pushed off the grid
-             pushable_enemy_location.append([n for n in m[1]])
+             get_point_enemy_location.append([n for n in m[1]])
          else:
              # if the '' is not in the destination then it is just a normal enemy location
-            get_point_enemy_location.append([n for n in m[1]])
+            pushable_enemy_location.append([n for n in m[1]])
 
     for m in moves['inline_ply_moves']:
 
@@ -294,7 +294,7 @@ def sort_moves(moves, state, color):
                         inline_edge_two.append(m)
                 elif m[1][0] not in constant.CENTER or m[1][2] not in constant.CENTER:
                     # C if both origin not in center
-                    if m[2][0] in constant.MIDDLE or m[2][1] in constant.MIDDLE:
+                    if m[2][0] in constant.MIDDLE and m[2][1] in constant.MIDDLE:
                         # if destination is in middle probably want to move to center
                         inline_towards_middle_two.append(m)
                     else: # if destination is not in middle
@@ -370,9 +370,9 @@ def eval(state):
         # number of pushes available
         # number of pushes that result opponent gets pushed off
         value = state[0] * (-5) + \
-                state[1] * 2 + \
+                state[1] * 5 + \
                 user_edge * (-2) + \
-                opponent_edge * 5 + \
+                opponent_edge * 10 + \
                 -(distance_from_centre(state[2], state[3])) * 10 + \
                 len(state[5]) * 30 + \
                 calculate_push_off(state[5]) * 15
