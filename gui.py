@@ -421,7 +421,7 @@ elif event == 'Start':
                     move_notation_no_color = tanslate_move_notation_to_with_no_color(move)
                     window2['next_move'].update(get_move_detail([move_notation_no_color]))
                     if new_board['isScore']:
-                        player2_out = + 1
+                        player2_out += 1
                         window2['p2_out'].update("Player 1 Out: "+str(player2_out)) # update points if pushed off
 
                     draw_board(canvas, selected_board)
