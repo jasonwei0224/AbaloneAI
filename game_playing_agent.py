@@ -93,10 +93,10 @@ def iterative_deepening(state, color, start_time, time_limit, first_move):
     depth = 0
     val = -sys.maxsize - 1
     b = ""
-    # while depth < MAX_DEPTH:
-    # if depth >= MAX_DEPTH:
-    #     break
-    # start Time here
+    # while True:
+    #     if depth >= MAX_DEPTH:
+    #         break
+    #     # start Time here
     #     current_time = datetime.datetime.now()
     #     if current_time>= time_limit:
     #         break
@@ -247,10 +247,13 @@ def sort_moves(moves, state, color):
     for m in moves['inline_opp_moves']:
          if '' in m[2]:
              # if the  '' is in the destination then opponent is being pushed off the grid
-             get_point_enemy_location.append([n for n in m[1]])
+             for n in m[1]:
+                 pushable_enemy_location.append(n)
          else:
              # if the '' is not in the destination then it is just a normal enemy location
-            pushable_enemy_location.append([n for n in m[1]])
+             for n in m[1]:
+                 pushable_enemy_location.append(n)
+
 
     for m in moves['inline_ply_moves']:
 
@@ -285,8 +288,10 @@ def sort_moves(moves, state, color):
                         inline_edge_two.append(m)
                 elif m[1][0] not in constant.CENTER or m[1][2] not in constant.CENTER:
                     # C if both origin not in center
-                    if m[2][0] in constant.MIDDLE and m[2][1] in constant.MIDDLE:
+                    if m[2][0] in constant.MIDDLE and m[2][1] in constant.MIDDLE and m[1][0] in constant.MIDDLE and m[1][1] in constant.MIDDLE:
                         # if destination is in middle probably want to move to center
+                        inline_defence_two.append(m)
+                    elif m[2][0] in constant.MIDDLE and m[2][1] in constant.MIDDLE:
                         inline_towards_middle_two.append(m)
                     else: # if destination is not in middle
                         if m[2][0] in constant.EDGE and m[2][1] in constant.EDGE:
@@ -325,10 +330,22 @@ def sort_moves(moves, state, color):
             side_step_defence.append(m)
         elif m[0] == 'SS' and len(m[1]) == 3:
             side_step_defence.append(m)
+    # For DEFAULT BOARD
+    # sorted_moves = single + single_in_middle_already + inline_in_middle_two + inline_in_middle_three + inline_edge_two + \
+    # inline_edge_three + inline_defence_two + inline_defence_three + side_step_defence \
+    #               + inline_towards_middle_two + inline_towards_middle_three + inline_push_two + inline_push_three
 
-    sorted_moves = single + single_in_middle_already + inline_in_middle_two + inline_in_middle_three + inline_edge_two + \
-    inline_edge_three + inline_defence_two + inline_defence_three + side_step_defence \
-                  + inline_towards_middle_two + inline_towards_middle_three + inline_push_two + inline_push_three
+    # For GERMAN DIASY BOARD
+    # sorted_moves = single + single_in_middle_already + inline_edge_two + \
+    #                inline_edge_three + inline_defence_two + inline_defence_three + side_step_defence + inline_in_middle_two + inline_in_middle_three\
+    #                + inline_towards_middle_two + inline_towards_middle_three + inline_push_two + inline_push_three
+
+    # For BELGIAN DIASY BOARD
+    print("inline pushes" , inline_push_two, inline_push_three)
+
+    sorted_moves = single + single_in_middle_already + inline_edge_two + \
+                   inline_edge_three + inline_defence_two + inline_defence_three + side_step_defence + inline_in_middle_two + inline_in_middle_three\
+                   + inline_towards_middle_two + inline_towards_middle_three + inline_push_two + inline_push_three
     return sorted_moves
 
 
@@ -366,7 +383,8 @@ def eval(state):
                 opponent_edge * 5 + \
                 -(distance_from_centre(state[2], state[3])) * 30 + \
                 len(state[5]) * 20 + \
-                calculate_push_off(state[5]) * 10
+                calculate_push_off(state[5])[0] * 10 + \
+                calculate_push_off(state[5])[1] * 100
 
 
         return value
@@ -374,10 +392,13 @@ def eval(state):
 
 def calculate_push_off(opp_move):
     count = 0
+    push = 0
     for m in opp_move:
         if m[2] == [] or m[2][-1] == '':
             count += 1
-    return count
+        else:
+            push +=1
+    return count, push
 
 
 def calculate_center(row, col):
@@ -415,25 +436,4 @@ def get_edge(matrix, color):
                     opponent_edge += 1
     return user_edge, opponent_edge
 
-def defence(user_edge_lst):
-    pass
 
-# def get_grouping(location_matrix, adjacent_marble, adj_lst, direction, color, user_lst, opp_lst, count_user,
-#                     count_opp):
-#
-#     if count_user > 3:
-#         return
-#     row = notation_to_coordinates(adjacent_marble)[0]
-#     col = notation_to_coordinates(adjacent_marble)[1]
-#
-#     if location_matrix[row][col] == 0:
-#         if count_user > count_opp and count_user >= 1:
-#             return count_user, direction
-#
-#     elif adjacent_marble in opp_lst:
-#         return get_grouping(location_matrix, adjacent_marble, adj_lst, direction, color, user_lst, opp_lst, count_user,
-#                                count_opp + 1)
-#
-#     elif adjacent_marble in user_lst:
-#         return get_grouping(location_matrix, adjacent_marble, adj_lst, direction, color,
-#                                user_lst, opp_lst, count_user + 1, count_opp)
