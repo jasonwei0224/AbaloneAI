@@ -238,6 +238,7 @@ def sort_moves(moves, state, color):
     enemy_location = []
     pushable_enemy_location = []
     get_point_enemy_location = []
+    get_point = []
 
     for row in range(len(state[2])):
         for col in range(len(state[2][row])):
@@ -248,7 +249,7 @@ def sort_moves(moves, state, color):
          if '' in m[2]:
              # if the  '' is in the destination then opponent is being pushed off the grid
              for n in m[1]:
-                 pushable_enemy_location.append(n)
+                 get_point_enemy_location.append(n)
          else:
              # if the '' is not in the destination then it is just a normal enemy location
              for n in m[1]:
@@ -275,6 +276,8 @@ def sort_moves(moves, state, color):
             if m[2][0] in pushable_enemy_location or m[2][1] in pushable_enemy_location:
                 # if it is pushable
                 inline_push_two.append(m)  # TODO Sort by closeness to edge
+            elif m[2][0] in get_point_enemy_location or m[2][1] in get_point_enemy_location:
+                get_point.append(m)
             else:  # if it is not pushable
                 if m[1][0] in constant.CENTER and m[1][1] in constant.CENTER:
                     # A if origin are in the center
@@ -302,6 +305,8 @@ def sort_moves(moves, state, color):
         elif m[0] == 'I' and len(m[1]) == 3:
             if m[2][0] in pushable_enemy_location or m[2][1] in pushable_enemy_location or m[2][2] in pushable_enemy_location:
                 inline_push_three.append(m)  # TODO Sort by closeness to edge
+            elif m[2][0] in get_point_enemy_location or m[2][1] in get_point_enemy_location or m[2][2] in get_point_enemy_location:
+                get_point.append(m)
             else:  # if it is not pushable
                 if m[1][0] in constant.CENTER and m[1][1] in constant.CENTER and m[2][2] in constant.CENTER:
                     # A if origin are in the center
@@ -345,7 +350,7 @@ def sort_moves(moves, state, color):
 
     sorted_moves = single + single_in_middle_already + inline_edge_two + \
                    inline_edge_three + inline_defence_two + inline_defence_three + side_step_defence + inline_in_middle_two + inline_in_middle_three\
-                   + inline_towards_middle_two + inline_towards_middle_three + inline_push_two + inline_push_three
+                   + inline_towards_middle_two + inline_towards_middle_three + inline_push_two + inline_push_three + get_point
     return sorted_moves
 
 
@@ -383,14 +388,12 @@ def eval(state):
                 opponent_edge * 5 + \
                 -(distance_from_centre(state[2], state[3])) * 30 + \
                 len(state[5]) * 20 + \
-                calculate_push_off(state[5])[0] * 10 + \
-                calculate_push_off(state[5])[1] * 100
-
-
+                calculate_push(state[5])[0] * 10 + \
+                calculate_push(state[5])[1] * 100
         return value
 
 
-def calculate_push_off(opp_move):
+def calculate_push(opp_move):
     count = 0
     push = 0
     for m in opp_move:
