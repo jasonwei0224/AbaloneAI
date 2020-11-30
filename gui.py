@@ -349,10 +349,10 @@ elif event == 'Start':
                         # print(move_lst)
                         remaining_move = update_move_history(move_lst)
                         window2["p2_move"].update(remaining_move)
-                        print(remaining_move)
+                        # print(remaining_move)
                         # print(move_lst2)
                         move_lst =  list(filter(lambda a: a != "=>" and a != ''and a != '\n', move_lst2))
-                        print(move_lst)
+                        # print(move_lst)
 
                     elif turn == 2:
                         move_lst = window2["p1_move"].Get().split(' ')
@@ -368,13 +368,13 @@ elif event == 'Start':
                         # print(move_lst)
                         remaining_move = update_move_history(move_lst)
                         window2["p1_move"].update(remaining_move)
-                        print(remaining_move)
+                        # print(remaining_move)
                         # print(move_lst2)
                         move_lst = list(filter(lambda a: a != "=>" and a != '' and a != '\n', move_lst2))
-                        print(move_lst)
+                        # print(move_lst)
                     # print(move_lst)
                     last_move = process_move_history(move_lst, turn, player1_color, player2_color)
-                    print(last_move)
+                    # print(last_move)
                     text_board_format = translate_board_format_to_text(selected_board)
                     new_board = GenerateBoard.generate_result_board(last_move, text_board_format)  # get the updated board to be
                     selected_board = text_to_matrix_board(new_board['board'])  # translate to matrix notation
@@ -436,13 +436,13 @@ elif event == 'Start':
                                                                          int(window['p1_time_limit'].Get()), True)
 
                         agent_time += time
-                        print('num', v, move, time, agent_time, str(agent_time))
+                        # print('num', v, move, time, agent_time, str(agent_time))
 
                         window2["time_p1"].update("Time taken by player 1: " + str(agent_time))
                     else:
                         v, move, time = game_playing_agent.iterative_deepening(state_space, turn_color, 0,
                                                                          int(window['p1_time_limit'].Get()), False)
-                        print(v, move, time)
+                        # print(v, move, time)
                         agent_time += time
                         window2["time_p1"].update("Time taken by player 1: " + str(agent_time))
 
@@ -466,17 +466,17 @@ elif event == 'Start':
                     if validate_input(move):
                         # OPPONENT INPUT: Type, coordinates no space
                         move = translate_move(move)
-                        print("move with color", move)
+                        # print("move with color", move)
                         text_board_format = translate_board_format_to_text(selected_board)
                         new_board = GenerateBoard.generate_result_board(move, text_board_format) # get the updated board to be
                         selected_board = text_to_matrix_board(new_board['board'])  # translate to matrix notation
                         move = remove_color(move)
-                        print("move without color" ,move)
+                        # print("move without color" ,move)
                         window2['next_move'].update("Next Move: " + get_move_detail([move])) # display next move on screen
                         if new_board['isScore']:
                             print('add ')
                             player1_out += 1
-                            print(player1_out)
+                            # print(player1_out)
                             window2['p1_out'].update("Player 1 out: " + str(player1_out))
                         draw_board(canvas, selected_board) # update board on gui
                         window2["p2_move"].update(window2["p2_move"].Get() + get_move_detail([move])) # record move on screen

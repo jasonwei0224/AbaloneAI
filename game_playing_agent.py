@@ -140,21 +140,21 @@ def max_value(state, alpha, beta, color, start_time, time_limit, depth, best_mov
 
     for m in sorted_moves:
         i += 1
-        print(i)
+        # print(i)
         m_with_color = tanslate_move_notation_to_with_color(m, state[2])
         user_num_out = state[0]
         txt_board = translate_board_format_to_text(state[2])
-        print("text board: ", txt_board)
+        # print("text board: ", txt_board)
         result_board = generate_result_board(m_with_color, txt_board)
         matrix_board = text_to_matrix_board(result_board['board'])
         opp_num_out = ((state[1] + 1) if result_board['isScore'] else state[1])
         new_state = [user_num_out, opp_num_out, matrix_board, state[3], state[4], moves['inline_opp_moves']]
-        print("The move: ", m_with_color, "\nprevious state: ", state[:2], "\ncurrent state after move: ",
-              new_state[:2], "\nmarble pushed: ", result_board['isScore'], "board: ", matrix_board)
+        # print("The move: ", m_with_color, "\nprevious state: ", state[:2], "\ncurrent state after move: ",
+              # new_state[:2], "\nmarble pushed: ", result_board['isScore'], "board: ", matrix_board)
         # new_val, best_move = min_value(new_state, alpha, beta, (2 if color == 1 else 1) ,start_time, time_limit, depth+1, m_with_color)
         new_val, time_taken = min_value(new_state, alpha, beta, (2 if color == 1 else 1), start_time, time_limit,
                                         depth + 1, m_with_color)
-        print("current value: ", v, "new value: ", new_val, "alpha", alpha, "beta", beta)
+        # print("current value: ", v, "new value: ", new_val, "alpha", alpha, "beta", beta)
         if type(new_val) is tuple:
             new_val = new_val[0]
         v = max(v, new_val)
@@ -194,13 +194,13 @@ def min_value(state, alpha, beta, color, start_time, time_limit, depth, best_mov
         m_with_color = tanslate_move_notation_to_with_color(m, state[2])
         user_num_out = state[1]
         txt_board = translate_board_format_to_text(state[2])
-        print("text board: ", txt_board)
+        # print("text board: ", txt_board)
         result_board = generate_result_board(m_with_color, txt_board)
         matrix_board = text_to_matrix_board(result_board['board'])
         opp_num_out = ((state[0] + 1) if result_board['isScore'] else state[0])
         new_state = [user_num_out, opp_num_out, matrix_board, state[3], state[4], moves['inline_opp_moves']]
-        print("The move: ", m_with_color, "\nprevious state: ", state[:2], "\ncurrent state after move: ",
-              new_state[:2], "\nmarble pushed: ", result_board['isScore'], "board: ", matrix_board)
+        # print("The move: ", m_with_color, "\nprevious state: ", state[:2], "\ncurrent state after move: ",
+        #       new_state[:2], "\nmarble pushed: ", result_board['isScore'], "board: ", matrix_board)
         # new_val, best_move = max_value(new_state, alpha, beta, (2 if color == 1 else 1), start_time, time_limit, depth +1, m_with_color)
         v = max_value(new_state, alpha, beta, (2 if color == 1 else 1), start_time, time_limit,
                       depth + 1, m_with_color)[0]
@@ -346,8 +346,6 @@ def sort_moves(moves, state, color):
     #                + inline_towards_middle_two + inline_towards_middle_three + inline_push_two + inline_push_three
 
     # For BELGIAN DIASY BOARD
-    print("inline pushes" , inline_push_two, inline_push_three)
-
     sorted_moves = single + single_in_middle_already + inline_edge_two + \
                    inline_edge_three + inline_defence_two + inline_defence_three + side_step_defence + inline_in_middle_two + inline_in_middle_three\
                    + inline_towards_middle_two + inline_towards_middle_three + inline_push_two + inline_push_three + get_point
