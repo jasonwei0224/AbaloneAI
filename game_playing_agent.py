@@ -392,7 +392,8 @@ def eval(state):
                 len(state[5]) * 20 + \
                 calculate_push(state[5])[0] * 10 + \
                 calculate_push(state[5])[1] * 100 + \
-                u * (100) + o * (10)
+                u * (100) + o * (1)
+        print(value)
         return value
 
 
@@ -416,7 +417,6 @@ def defend_from_sumito(matrix, color):
                 user += 8
             else:
                 opp += 1
-    print(user, opp)
     return user, opp
 
 
