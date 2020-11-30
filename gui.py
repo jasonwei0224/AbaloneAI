@@ -431,7 +431,7 @@ elif event == 'Start':
                     turn_color = "w" if player1_color == 1 else "b"
 
                     # call the game playing agent and get the board/move notation
-                    if num_moves == 0:
+                    if num_moves == 0 or num_moves == 1:
                         v, move, time = game_playing_agent.iterative_deepening(state_space, turn_color, 0,
                                                                          int(window['p1_time_limit'].Get()), True)
 
