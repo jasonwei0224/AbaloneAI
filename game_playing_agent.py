@@ -4,7 +4,8 @@ import random
 
 import constant
 import time
-from move_generator import generate_moves
+from move_generator import generate_moves, move_1, move_3, move_5
+from move_generator import move_7, move_9, move_11
 from GenerateBoard import generate_result_board
 from visualize_board import show_board
 import copy
@@ -90,7 +91,7 @@ def iterative_deepening(state, color, start_time, time_limit, first_move):
 
         return 0, moves[move_num], time.perf_counter() - start_time
 
-    depth = 0
+    depth = 2
     val = -sys.maxsize - 1
     b = ""
     # while True:
@@ -125,7 +126,7 @@ def max_value(state, alpha, beta, color, start_time, time_limit, depth, best_mov
     :return:
     """
     i = 0
-    print('\nmax', "Color is: ", color)
+    # print('\nmax', "Color is: ", color)
     time_taken = time.perf_counter() - start_time
     if terminal_test(state):
         return eval(state), best_move, time_taken
@@ -150,7 +151,7 @@ def max_value(state, alpha, beta, color, start_time, time_limit, depth, best_mov
         opp_num_out = ((state[1] + 1) if result_board['isScore'] else state[1])
         new_state = [user_num_out, opp_num_out, matrix_board, state[3], state[4], moves['inline_opp_moves']]
         # print("The move: ", m_with_color, "\nprevious state: ", state[:2], "\ncurrent state after move: ",
-              # new_state[:2], "\nmarble pushed: ", result_board['isScore'], "board: ", matrix_board)
+        # new_state[:2], "\nmarble pushed: ", result_board['isScore'], "board: ", matrix_board)
         # new_val, best_move = min_value(new_state, alpha, beta, (2 if color == 1 else 1) ,start_time, time_limit, depth+1, m_with_color)
         new_val, time_taken = min_value(new_state, alpha, beta, (2 if color == 1 else 1), start_time, time_limit,
                                         depth + 1, m_with_color)
@@ -177,7 +178,7 @@ def min_value(state, alpha, beta, color, start_time, time_limit, depth, best_mov
     :return:
     """
     # best_move = ""
-    print("\nmin", "Color is: ", color)
+    # print("\nmin", "Color is: ", color)
     time_taken = time.perf_counter() - start_time
 
     if terminal_test(state):
@@ -228,7 +229,7 @@ def sort_moves(moves, state, color):
     inline_edge_three = []
     inline_towards_middle_three = []
     inline_in_middle_three = []
-    inline_defence_three= []
+    inline_defence_three = []
     inline_push_two = []
     inline_push_three = []
     side_step_towards_middle = []
@@ -242,19 +243,18 @@ def sort_moves(moves, state, color):
 
     for row in range(len(state[2])):
         for col in range(len(state[2][row])):
-            if state[2][row][col] != color and  state[2][row][col] != 0:
+            if state[2][row][col] != color and state[2][row][col] != 0:
                 enemy_location.append(coordinates_to_notation(row, col))
 
     for m in moves['inline_opp_moves']:
-         if '' in m[2]:
-             # if the  '' is in the destination then opponent is being pushed off the grid
-             for n in m[1]:
-                 get_point_enemy_location.append(n)
-         else:
-             # if the '' is not in the destination then it is just a normal enemy location
-             for n in m[1]:
-                 pushable_enemy_location.append(n)
-
+        if '' in m[2]:
+            # if the  '' is in the destination then opponent is being pushed off the grid
+            for n in m[1]:
+                get_point_enemy_location.append(n)
+        else:
+            # if the '' is not in the destination then it is just a normal enemy location
+            for n in m[1]:
+                pushable_enemy_location.append(n)
 
     for m in moves['inline_ply_moves']:
 
@@ -268,7 +268,8 @@ def sort_moves(moves, state, color):
             elif m[1][0] in constant.EDGE and m[2][0] in constant.MIDDLE:
                 # if start is in edge and go towards middle then it is another possible esacpe move
                 single_possible_defence.append(m)
-            elif m[1][0] in constant.CENTER and m[2][0] in constant.MIDDLE or m[1][0] in constant.MIDDLE and m[2][0] in constant.CENTER :
+            elif (m[1][0] in constant.CENTER and m[2][0] in constant.MIDDLE) or (
+                    m[1][0] in constant.MIDDLE and m[2][0] in constant.CENTER):
                 # if start is in center then we rarely would move this cuz we wanna move in three
                 single_in_middle_already.append(m)
 
@@ -287,25 +288,28 @@ def sort_moves(moves, state, color):
                     if m[2][0] in constant.CENTER and m[2][1] in constant.CENTER:
                         # if destination is in center probably want to make this move
                         inline_towards_middle_two.append(m)
-                    else: # if destination is not in center probably dont wanna do this move
+                    else:  # if destination is not in center probably dont wanna do this move
                         inline_edge_two.append(m)
                 elif m[1][0] not in constant.CENTER or m[1][2] not in constant.CENTER:
                     # C if both origin not in center
-                    if m[2][0] in constant.MIDDLE and m[2][1] in constant.MIDDLE and m[1][0] in constant.MIDDLE and m[1][1] in constant.MIDDLE:
+                    if m[2][0] in constant.MIDDLE and m[2][1] in constant.MIDDLE and m[1][0] in constant.MIDDLE and \
+                            m[1][1] in constant.MIDDLE:
                         # if destination is in middle probably want to move to center
                         inline_defence_two.append(m)
                     elif m[2][0] in constant.MIDDLE and m[2][1] in constant.MIDDLE:
                         inline_towards_middle_two.append(m)
-                    else: # if destination is not in middle
+                    else:  # if destination is not in middle
                         if m[2][0] in constant.EDGE and m[2][1] in constant.EDGE:
                             # if destination at edge possible defensive move
                             inline_defence_two.append(m)
                         else:
                             inline_edge_two.append(m)
         elif m[0] == 'I' and len(m[1]) == 3:
-            if m[2][0] in pushable_enemy_location or m[2][1] in pushable_enemy_location or m[2][2] in pushable_enemy_location:
+            if m[2][0] in pushable_enemy_location or m[2][1] in pushable_enemy_location or m[2][
+                2] in pushable_enemy_location:
                 inline_push_three.append(m)  # TODO Sort by closeness to edge
-            elif m[2][0] in get_point_enemy_location or m[2][1] in get_point_enemy_location or m[2][2] in get_point_enemy_location:
+            elif m[2][0] in get_point_enemy_location or m[2][1] in get_point_enemy_location or m[2][
+                2] in get_point_enemy_location:
                 get_point.append(m)
             else:  # if it is not pushable
                 if m[1][0] in constant.CENTER and m[1][1] in constant.CENTER and m[2][2] in constant.CENTER:
@@ -313,7 +317,8 @@ def sort_moves(moves, state, color):
                     inline_in_middle_three.append(m)
                 elif m[1][0] in constant.CENTER or m[1][1] in constant.CENTER or m[2][2] in constant.CENTER:
                     # B if only one origin is in the center probably should try to move to center
-                    if m[2][0] in constant.CENTER and m[2][1] in constant.CENTER or m[2][2] in constant.CENTER and m[2][1] in constant.CENTER:
+                    if m[2][0] in constant.CENTER and m[2][1] in constant.CENTER or m[2][2] in constant.CENTER and m[2][
+                        1] in constant.CENTER:
                         # if two destination is in center probably want to make this move
                         inline_towards_middle_three.append(m)
                     else:  # if destination is not in center probably dont wanna do this move
@@ -327,10 +332,10 @@ def sort_moves(moves, state, color):
                         if m[2][0] in constant.EDGE and m[2][1] in constant.EDGE and m[2][2] in constant.EDGE:
                             # if all destination at edge possible defensive move
                             inline_defence_three.append(m)
-                        else: # horizontally in middle
+                        else:  # horizontally in middle
                             inline_edge_three.append(m)
 
-    for m in moves['sidestep_ply_moves']: # All side step are classified as defend moves for now
+    for m in moves['sidestep_ply_moves']:  # All side step are classified as defend moves for now
         if m[0] == 'SS' and len(m[1]) == 2:
             side_step_defence.append(m)
         elif m[0] == 'SS' and len(m[1]) == 3:
@@ -347,7 +352,7 @@ def sort_moves(moves, state, color):
 
     # For BELGIAN DIASY BOARD
     sorted_moves = single + single_in_middle_already + inline_edge_two + \
-                   inline_edge_three + inline_defence_two + inline_defence_three + side_step_defence + inline_in_middle_two + inline_in_middle_three\
+                   inline_edge_three + inline_defence_two + inline_defence_three + side_step_defence + inline_in_middle_two + inline_in_middle_three \
                    + inline_towards_middle_two + inline_towards_middle_three + inline_push_two + inline_push_three + get_point
     return sorted_moves
 
@@ -372,6 +377,7 @@ def eval(state):
         return -sys.maxsize
     else:
         user_edge, opponent_edge = get_edge(state[2], state[3])
+        u, o = defend_from_sumito(state[2], state[3])
         # number of player marbles out
         # number of opponent marbles out
         # number of player marbles on edge
@@ -385,7 +391,8 @@ def eval(state):
                 -(distance_from_centre(state[2], state[3])) * 30 + \
                 len(state[5]) * 20 + \
                 calculate_push(state[5])[0] * 10 + \
-                calculate_push(state[5])[1] * 100
+                calculate_push(state[5])[1] * 100 + \
+                u * (100) + o * (10)
         return value
 
 
@@ -396,8 +403,83 @@ def calculate_push(opp_move):
         if m[2] == [] or m[2][-1] == '':
             count += 1
         else:
-            push +=1
+            push += 1
     return count, push
+
+
+def defend_from_sumito(matrix, color):
+    user = 0
+    opp = 0
+    for row in range(len(matrix)):
+        for col in range(len(matrix[row])):
+            if will_be_sumito(row, col, matrix, color):
+                user += 3
+            else:
+                opp += 1
+
+    print(user, opp)
+    return user, opp
+
+
+def opposite_chain(move, curr_coord, matrix, color):
+    opp_chain = []
+
+    next_coord = move(curr_coord[0], curr_coord[1])
+
+    for i in range(3):
+        if next_coord != (-1, -1):
+            if ((matrix[next_coord[0]][next_coord[1]] == color \
+                 or matrix[next_coord[0]][next_coord[1]] == 0)):
+                break
+            else:
+                opp_chain.append(next_coord)
+            next_coord = move(next_coord[0], next_coord[1])
+
+    return opp_chain
+
+
+def will_be_sumito(row, col, matrix, color):
+    result = 0
+    moves = []
+    if row == 0:
+        if col == 0:
+            moves = [move_1, move_9, move_11]
+        elif col == 4:
+            moves = [move_1, move_3, move_11]
+        else:
+            moves = [move_1, move_11]
+    elif row == 4:
+        if col == 0:
+            moves = [move_7, move_9, move_11]
+        elif col == 8:
+            moves = [move_1, move_3, move_5]
+        else:
+            return 0
+    elif row == 8:
+        if col == 0:
+            moves = [move_5, move_7, move_9]
+        elif col == 4:
+            moves = [move_3, move_5, move_7]
+    elif row in [1, 2, 3]:
+        if col == 0:
+            moves = [move_9, move_11]
+        elif col == len(matrix[row]) - 1:
+            moves = [move_1, move_3]
+        else:
+            return 0
+    elif row in [5, 6, 7]:
+        if col == 0:
+            moves = [move_7, move_9]
+        elif col == len(matrix[row]) - 1:
+            moves = [move_3, move_5]
+        else:
+            return 0
+
+    for m in moves:
+        chain = opposite_chain(m, (row, col), matrix, color)
+        if len(chain) > 1:
+            result = 1
+    return result
 
 
 def calculate_center(row, col):
