@@ -81,7 +81,7 @@ def iterative_deepening(state, color, start_time, time_limit, first_move):
     start_time = time.perf_counter()
     if first_move:
         moves = generate_moves(state[2], color)
-        moves = sort_moves(moves)
+        moves = sort_moves(moves, state, color)
         move_num = random.randint(0, len(moves) - 1)
         color_txt = ('w' if color == 1 else 'b')
         for i in range(len(moves[move_num][1])):
@@ -93,10 +93,10 @@ def iterative_deepening(state, color, start_time, time_limit, first_move):
     depth = 0
     val = -sys.maxsize - 1
     b = ""
-    # while depth < MAX_DEPTH:
-    # if depth >= MAX_DEPTH:
-    #     break
-    # start Time here
+    # while True:
+    #     if depth >= MAX_DEPTH:
+    #         break
+    #     # start Time here
     #     current_time = datetime.datetime.now()
     #     if current_time>= time_limit:
     #         break
@@ -136,7 +136,7 @@ def max_value(state, alpha, beta, color, start_time, time_limit, depth, best_mov
     v = -sys.maxsize - 1
     best_move = ""
     moves = generate_moves(state[2], color)
-    sorted_moves = sort_moves(moves)  # sorting the nodes
+    sorted_moves = sort_moves(moves, state, color)  # sorting the nodes
 
     for m in sorted_moves:
         i += 1
@@ -189,7 +189,7 @@ def min_value(state, alpha, beta, color, start_time, time_limit, depth, best_mov
     v = sys.maxsize - 1
     best_move = ""
     moves = generate_moves(state[2], color)
-    sorted_moves = sort_moves(moves)  # sorting the nodes
+    sorted_moves = sort_moves(moves, state, color)  # sorting the nodes
     for m in sorted_moves:
         m_with_color = tanslate_move_notation_to_with_color(m, state[2])
         user_num_out = state[1]
@@ -213,52 +213,144 @@ def min_value(state, alpha, beta, color, start_time, time_limit, depth, best_mov
     return v, time_taken  # best_move
 
 
-def sort_moves(moves):
+def sort_moves(moves, state, color):
     # Ordering of moves:
     # 1. Inline
     # 2. Side step
     # 3. single marble
-    # TODO future consideration: more detail move ordering e.g inlines moves that's closer to edge first
-    inline_two = []
-    inline_three = []
+    single_in_middle_already = []
+    single_possible_defence = []
+    single = []
+    inline_edge_two = []
+    inline_towards_middle_two = []
+    inline_in_middle_two = []
+    inline_defence_two = []
+    inline_edge_three = []
+    inline_towards_middle_three = []
+    inline_in_middle_three = []
+    inline_defence_three= []
+    inline_push_two = []
+    inline_push_three = []
+    side_step_towards_middle = []
+    side_step_defence = []
     side_step_two = []
     side_step_three = []
-    single = []
+    enemy_location = []
+    pushable_enemy_location = []
+    get_point_enemy_location = []
+    get_point = []
 
-    inline_edge = []
-    inline_middle = []
-    side_step_edge_to_middle = []
-    side_step_middle = []
+    for row in range(len(state[2])):
+        for col in range(len(state[2][row])):
+            if state[2][row][col] != color and  state[2][row][col] != 0:
+                enemy_location.append(coordinates_to_notation(row, col))
+
+    for m in moves['inline_opp_moves']:
+         if '' in m[2]:
+             # if the  '' is in the destination then opponent is being pushed off the grid
+             for n in m[1]:
+                 get_point_enemy_location.append(n)
+         else:
+             # if the '' is not in the destination then it is just a normal enemy location
+             for n in m[1]:
+                 pushable_enemy_location.append(n)
+
 
     for m in moves['inline_ply_moves']:
+
         if m[0] == 'I' and len(m[1]) == 1:
-            single.append(m)
+            if m[1][0] in constant.EDGE and m[2][0] in constant.EDGE:
+                # if start and dest both on edge then its possible escape move
+                single_possible_defence.append(m)
+            elif m[1][0] in constant.MIDDLE and m[2][0] in constant.EDGE:
+                # if in start is in middle and dest is at edge probably "suiciding" giving opponent a chance to push us off
+                single.append(m)
+            elif m[1][0] in constant.EDGE and m[2][0] in constant.MIDDLE:
+                # if start is in edge and go towards middle then it is another possible esacpe move
+                single_possible_defence.append(m)
+            elif m[1][0] in constant.CENTER and m[2][0] in constant.MIDDLE or m[1][0] in constant.MIDDLE and m[2][0] in constant.CENTER :
+                # if start is in center then we rarely would move this cuz we wanna move in three
+                single_in_middle_already.append(m)
+
         elif m[0] == 'I' and len(m[1]) == 2:
-            inline_two.append(m)
+            if m[2][0] in pushable_enemy_location or m[2][1] in pushable_enemy_location:
+                # if it is pushable
+                inline_push_two.append(m)  # TODO Sort by closeness to edge
+            elif m[2][0] in get_point_enemy_location or m[2][1] in get_point_enemy_location:
+                get_point.append(m)
+            else:  # if it is not pushable
+                if m[1][0] in constant.CENTER and m[1][1] in constant.CENTER:
+                    # A if origin are in the center
+                    inline_in_middle_two.append(m)
+                elif m[1][0] in constant.CENTER or m[1][1] in constant.CENTER:
+                    # B if only one origin is in the center probably should try to move to center
+                    if m[2][0] in constant.CENTER and m[2][1] in constant.CENTER:
+                        # if destination is in center probably want to make this move
+                        inline_towards_middle_two.append(m)
+                    else: # if destination is not in center probably dont wanna do this move
+                        inline_edge_two.append(m)
+                elif m[1][0] not in constant.CENTER or m[1][2] not in constant.CENTER:
+                    # C if both origin not in center
+                    if m[2][0] in constant.MIDDLE and m[2][1] in constant.MIDDLE and m[1][0] in constant.MIDDLE and m[1][1] in constant.MIDDLE:
+                        # if destination is in middle probably want to move to center
+                        inline_defence_two.append(m)
+                    elif m[2][0] in constant.MIDDLE and m[2][1] in constant.MIDDLE:
+                        inline_towards_middle_two.append(m)
+                    else: # if destination is not in middle
+                        if m[2][0] in constant.EDGE and m[2][1] in constant.EDGE:
+                            # if destination at edge possible defensive move
+                            inline_defence_two.append(m)
+                        else:
+                            inline_edge_two.append(m)
         elif m[0] == 'I' and len(m[1]) == 3:
-            inline_three.append(m)
-    for m in moves['sidestep_ply_moves']:
+            if m[2][0] in pushable_enemy_location or m[2][1] in pushable_enemy_location or m[2][2] in pushable_enemy_location:
+                inline_push_three.append(m)  # TODO Sort by closeness to edge
+            elif m[2][0] in get_point_enemy_location or m[2][1] in get_point_enemy_location or m[2][2] in get_point_enemy_location:
+                get_point.append(m)
+            else:  # if it is not pushable
+                if m[1][0] in constant.CENTER and m[1][1] in constant.CENTER and m[2][2] in constant.CENTER:
+                    # A if origin are in the center
+                    inline_in_middle_three.append(m)
+                elif m[1][0] in constant.CENTER or m[1][1] in constant.CENTER or m[2][2] in constant.CENTER:
+                    # B if only one origin is in the center probably should try to move to center
+                    if m[2][0] in constant.CENTER and m[2][1] in constant.CENTER or m[2][2] in constant.CENTER and m[2][1] in constant.CENTER:
+                        # if two destination is in center probably want to make this move
+                        inline_towards_middle_three.append(m)
+                    else:  # if destination is not in center probably dont wanna do this move
+                        inline_edge_three.append(m)
+                elif m[1][0] not in constant.CENTER or m[1][2] not in constant.CENTER or m[2][2] not in constant.CENTER:
+                    # C if origin not in center
+                    if m[2][0] in constant.CENTER or m[2][1] in constant.CENTER or m[2][2] in constant.CENTER:
+                        # if destination is in center probably want to move to center
+                        inline_towards_middle_three.append(m)
+                    else:  # if destination is not in center
+                        if m[2][0] in constant.EDGE and m[2][1] in constant.EDGE and m[2][2] in constant.EDGE:
+                            # if all destination at edge possible defensive move
+                            inline_defence_three.append(m)
+                        else: # horizontally in middle
+                            inline_edge_three.append(m)
+
+    for m in moves['sidestep_ply_moves']: # All side step are classified as defend moves for now
         if m[0] == 'SS' and len(m[1]) == 2:
-            side_step_two.append(m)
+            side_step_defence.append(m)
         elif m[0] == 'SS' and len(m[1]) == 3:
-            side_step_three.append(m)
+            side_step_defence.append(m)
+    # For DEFAULT BOARD
+    # sorted_moves = single + single_in_middle_already + inline_in_middle_two + inline_in_middle_three + inline_edge_two + \
+    # inline_edge_three + inline_defence_two + inline_defence_three + side_step_defence \
+    #               + inline_towards_middle_two + inline_towards_middle_three + inline_push_two + inline_push_three
 
-    for i in inline_three:
-        if i[1][0] in constant.EDGE and i[1][0] in constant.EDGE and  i[1][0] in constant.EDGE and \
-                i[2][0] in constant.EDGE and i[2][0] in constant.EDGE and i[2][0] in constant.EDGE:
-            inline_edge.append((i))
-        else:
-            inline_middle.append(i)
+    # For GERMAN DIASY BOARD
+    # sorted_moves = single + single_in_middle_already + inline_edge_two + \
+    #                inline_edge_three + inline_defence_two + inline_defence_three + side_step_defence + inline_in_middle_two + inline_in_middle_three\
+    #                + inline_towards_middle_two + inline_towards_middle_three + inline_push_two + inline_push_three
 
-    for i in side_step_three:
-        if i[1][0] in constant.EDGE or i[1][0] in constant.EDGE or  i[1][0] in constant.EDGE :
-            side_step_edge_to_middle.append(i)
-        else:
-            side_step_middle.append(i)
+    # For BELGIAN DIASY BOARD
+    print("inline pushes" , inline_push_two, inline_push_three)
 
-    sorted_moves = single + side_step_two + inline_two +\
-                   side_step_middle + inline_edge + side_step_edge_to_middle + inline_middle
-
+    sorted_moves = single + single_in_middle_already + inline_edge_two + \
+                   inline_edge_three + inline_defence_two + inline_defence_three + side_step_defence + inline_in_middle_two + inline_in_middle_three\
+                   + inline_towards_middle_two + inline_towards_middle_three + inline_push_two + inline_push_three + get_point
     return sorted_moves
 
 
@@ -272,9 +364,7 @@ def terminal_test(state):
 
 def eval(state):
     """
-
     :param state:
-
     :return:
     """
 
@@ -296,18 +386,20 @@ def eval(state):
                 opponent_edge * 5 + \
                 -(distance_from_centre(state[2], state[3])) * 30 + \
                 len(state[5]) * 20 + \
-                calculate_push_off(state[5]) * 10
-
-
+                calculate_push(state[5])[0] * 10 + \
+                calculate_push(state[5])[1] * 100
         return value
 
 
-def calculate_push_off(opp_move):
+def calculate_push(opp_move):
     count = 0
+    push = 0
     for m in opp_move:
         if m[2] == [] or m[2][-1] == '':
             count += 1
-    return count
+        else:
+            push +=1
+    return count, push
 
 
 def calculate_center(row, col):
@@ -344,26 +436,3 @@ def get_edge(matrix, color):
                 elif matrix[row][col] != 0:
                     opponent_edge += 1
     return user_edge, opponent_edge
-
-def defence(user_edge_lst):
-    pass
-
-# def get_grouping(location_matrix, adjacent_marble, adj_lst, direction, color, user_lst, opp_lst, count_user,
-#                     count_opp):
-#
-#     if count_user > 3:
-#         return
-#     row = notation_to_coordinates(adjacent_marble)[0]
-#     col = notation_to_coordinates(adjacent_marble)[1]
-#
-#     if location_matrix[row][col] == 0:
-#         if count_user > count_opp and count_user >= 1:
-#             return count_user, direction
-#
-#     elif adjacent_marble in opp_lst:
-#         return get_grouping(location_matrix, adjacent_marble, adj_lst, direction, color, user_lst, opp_lst, count_user,
-#                                count_opp + 1)
-#
-#     elif adjacent_marble in user_lst:
-#         return get_grouping(location_matrix, adjacent_marble, adj_lst, direction, color,
-#                                user_lst, opp_lst, count_user + 1, count_opp)

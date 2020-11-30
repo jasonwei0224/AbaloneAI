@@ -233,6 +233,32 @@ def update_move_history(move_lst):
         s+=i
     return s
 
+
+def format_correct_input(user_move_string, player1_color):
+    temp = ""
+    result = ""
+    player_color = ""
+    if player1_color == 1:
+        player_color = "b"
+    else:
+        player_color = "w"
+
+    # Remove space
+    for char in user_move_string:
+        if char != " ":
+            temp += char
+    temp.lower()
+    str_array = temp.split(",")
+    for index in range(len(str_array)):
+        if index == 0:
+            result += str_array[index].upper() + ","
+        elif index < (len(str_array)-1):
+            result += str_array[index][0].upper() + str_array[index][1] + player_color + ","
+        else:
+            result += str_array[index][0].upper() + str_array[index][1] + player_color
+    return result
+
+
 window = sg.Window('Game Configuration', config_layout, font=('arial', 15))
 
 event, values = window.read()
@@ -385,7 +411,12 @@ elif event == 'Start':
                 pass
             elif event == "Submit":
                 move = window2['move'].Get()  # Get the move that user input
-
+                print("======================================OBSERVATION============================================")
+                print(move)
+                if move[0].lower() != "e":
+                    move = format_correct_input(move, player1_color)
+                print("======================================MODIFIED============================================")
+                print(move)
                 if turn == 1:
 
                     # current state space to be passed into game playing agent
@@ -421,7 +452,7 @@ elif event == 'Start':
                     move_notation_no_color = tanslate_move_notation_to_with_no_color(move)
                     window2['next_move'].update(get_move_detail([move_notation_no_color]))
                     if new_board['isScore']:
-                        player2_out = + 1
+                        player2_out += 1
                         window2['p2_out'].update("Player 1 Out: "+str(player2_out)) # update points if pushed off
 
                     draw_board(canvas, selected_board)
