@@ -413,10 +413,9 @@ def defend_from_sumito(matrix, color):
     for row in range(len(matrix)):
         for col in range(len(matrix[row])):
             if will_be_sumito(row, col, matrix, color):
-                user += 3
+                user += 8
             else:
                 opp += 1
-
     print(user, opp)
     return user, opp
 
@@ -425,16 +424,15 @@ def opposite_chain(move, curr_coord, matrix, color):
     opp_chain = []
 
     next_coord = move(curr_coord[0], curr_coord[1])
-
     for i in range(3):
         if next_coord != (-1, -1):
+
             if ((matrix[next_coord[0]][next_coord[1]] == color \
                  or matrix[next_coord[0]][next_coord[1]] == 0)):
                 break
             else:
                 opp_chain.append(next_coord)
             next_coord = move(next_coord[0], next_coord[1])
-
     return opp_chain
 
 
@@ -443,35 +441,35 @@ def will_be_sumito(row, col, matrix, color):
     moves = []
     if row == 0:
         if col == 0:
-            moves = [move_1, move_9, move_11]
+            moves = [move_7, move_3, move_5]
         elif col == 4:
-            moves = [move_1, move_3, move_11]
+            moves = [move_7, move_9, move_5]
         else:
-            moves = [move_1, move_11]
+            moves = [move_7, move_5]
     elif row == 4:
         if col == 0:
-            moves = [move_7, move_9, move_11]
-        elif col == 8:
             moves = [move_1, move_3, move_5]
+        elif col == 8:
+            moves = [move_7, move_9, move_11]
         else:
             return 0
     elif row == 8:
         if col == 0:
-            moves = [move_5, move_7, move_9]
+            moves = [move_1, move_3, move_11]
         elif col == 4:
-            moves = [move_3, move_5, move_7]
+            moves = [move_1, move_9, move_11]
     elif row in [1, 2, 3]:
         if col == 0:
-            moves = [move_9, move_11]
+            moves = [move_3, move_5]
         elif col == len(matrix[row]) - 1:
-            moves = [move_1, move_3]
+            moves = [move_7, move_9]
         else:
             return 0
     elif row in [5, 6, 7]:
         if col == 0:
-            moves = [move_7, move_9]
+            moves = [move_1, move_3]
         elif col == len(matrix[row]) - 1:
-            moves = [move_3, move_5]
+            moves = [move_9, move_11]
         else:
             return 0
 
