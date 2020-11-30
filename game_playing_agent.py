@@ -392,8 +392,7 @@ def eval(state):
                 len(state[5]) * 20 + \
                 calculate_push(state[5])[0] * 10 + \
                 calculate_push(state[5])[1] * 100 + \
-                u * (-2) + o * (2)
-        print(value)
+                u * (60) + o * (1)
         return value
 
 

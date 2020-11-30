@@ -4,6 +4,7 @@ import GenerateBoard
 import game_playing_agent
 import copy
 import traceback
+import math
 from GenerateBoard import generate_result_board
 
 # List of options for user to choose from
