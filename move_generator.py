@@ -31,7 +31,7 @@ coord_dict = {(0, 0): ["I", 5], (0, 1): ["I", 6], (0, 2): ["I", 7], (0, 3): ["I"
 def get_input(file_name):
     file = open(file_name, "r")
     player_color = file.readline()
-    # print(player_color)
+    print(player_color)
     locations = file.readline().split(',')
 
     location_matrix = copy.deepcopy(constant.EMPTY_BOARD)
@@ -41,7 +41,7 @@ def get_input(file_name):
         color = 1 if value[2] == 'w' else 2
         location_matrix[row][col] = color
 
-    return location_matrix, player_color #player_color[0]
+    return location_matrix, player_color[0]
 
 
 def draw_board(canvas, matrix):
@@ -98,6 +98,7 @@ def generate_inline(color, location_matrix):
     # print(color)
     player = 1 if color == 'w' else 2
     # player = color
+    # print(player)
     locations = [(ix, iy) for ix, row in enumerate(location_matrix) for iy, i in enumerate(row) if i == player]
     opp_loc = [(ix, iy) for ix, row in enumerate(location_matrix) for iy, i in enumerate(row) if i != player and i != 0]
 
@@ -122,9 +123,10 @@ def generate_inline(color, location_matrix):
 
         for x, y in locations:
             chain = get_chain(move, (x, y), 2, locations)
-            opp_chain = get_opp_chain(move, (x, y), opp_loc)
+            opp_chain = get_opp_chain(move, (x, y), opp_loc, locations)
 
             if len(chain) > len(opp_chain) and len(chain) > 1:
+
                 new_points = move(chain[0][0], chain[0][1])
 
                 new_position = []
@@ -132,8 +134,8 @@ def generate_inline(color, location_matrix):
                 old_position = []
                 old_opp_pos = []
 
-                if new_points not in locations and new_points != (-1, -1) and check_if_legal(new_points[0],
-                                                                                             new_points[1]):
+                if new_points not in locations and new_points != (-1, -1) and "blocked" not in opp_chain \
+                        and check_if_legal(new_points[0], new_points[1]):
                     pp = move(chain[0][0], chain[0][1])
 
                     if pp in opp_chain:
@@ -165,9 +167,9 @@ def generate_inline(color, location_matrix):
         for x, y in locations:
 
             chain = get_chain(move, (x, y), 3, locations)
-            opp_chain = get_opp_chain(move, (x, y), opp_loc)
+            opp_chain = get_opp_chain(move, (x, y), opp_loc, locations)
 
-            if len(chain) > len(opp_chain) and len(chain) > 2:
+            if len(chain) > len(opp_chain) and len(chain) > 2 and "blocked" not in opp_chain:
                 new_points = move(chain[0][0], chain[0][1])
 
                 new_position = []
@@ -194,6 +196,7 @@ def generate_inline(color, location_matrix):
                         opp_move_notation.append(("I", old_opp_pos, new_opp_position))
 
                     for i in chain:
+
                         new_points = move(i[0], i[1])
 
                         old_position.append(coord_dict[i][0] + str(coord_dict[i][1]))
@@ -368,7 +371,7 @@ def get_chain(move, current_coord, num_marbles, location_matrix):
     return chain
 
 
-def get_opp_chain(move, current_coord, location_matrix):
+def get_opp_chain(move, current_coord, location_matrix, opp_matrix):
     """
     Return the coordinates of the opposite player's chain of marbles.
     :param move_type:
@@ -381,8 +384,11 @@ def get_opp_chain(move, current_coord, location_matrix):
     next_coord = move(current_coord[0], current_coord[1])
 
     for i in range(3):
-        if next_coord != (-1, -1) and next_coord in location_matrix:
-            opp_chain.append(next_coord)
+        if next_coord != (-1, -1) and (next_coord in location_matrix or next_coord in opp_matrix):
+            if (next_coord in opp_matrix):
+                opp_chain.append("blocked")
+            else:
+                opp_chain.append(next_coord)
             next_coord = move(next_coord[0], next_coord[1])
 
     return opp_chain
@@ -482,7 +488,7 @@ def move_11(x, y):
 
 
 def main():
-    matrix, player_color = get_input("Test2.input")
+    matrix, player_color = get_input("Test12.input")
     resultDic = generate_moves(matrix, player_color)
     print("Inline", resultDic['inline_ply_moves'])
     print("SS", resultDic['sidestep_ply_moves'])

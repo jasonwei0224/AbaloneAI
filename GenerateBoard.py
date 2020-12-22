@@ -13,6 +13,7 @@ def generate_result_board(move_notation: [], board_info: []):
     # this function return the result dictionary, if enemy pushed off edge isScore = True
     result_dict = {'board': None, 'isScore': False}
     if validate_move_destination(dest_coords, result_board):
+        print("move ", move_notation, "board", board_info)
         print("invalid move_notation. Destination coordinate is not empty nor contains opponent marble")
         return None
     if move_type == "SS":
