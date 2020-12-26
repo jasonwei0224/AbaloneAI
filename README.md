@@ -21,7 +21,7 @@ Project is: _finished_
 
 ## Contact 
 Created by: 
-[@jasonwei0224](www.linkedin.com/in/jasonwei0224) - feel free to contact me!
-[@Vicky Chung](https://www.linkedin.com/in/vickychungg/) 
-[@Louis Lu] 
-[@Pritpal] 
+* [@jasonwei0224](www.linkedin.com/in/jasonwei0224) - feel free to contact me!
+* [@Vicky Chung](https://www.linkedin.com/in/vickychungg/) 
+* [@Louis Lu] 
+* [@Pritpal] 
